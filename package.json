@@ -1,0 +1,33 @@
+{
+  "name": "react-router-cache-route",
+  "version": "1.0.0",
+  "description": "cache-route for react-router base on react v16.3+ and router v4+",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "build": "rollup --config"
+  },
+  "keywords": [
+    "react-router",
+    "cache"
+  ],
+  "author": "CJY0208",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "rollup": "^0.61.2",
+    "rollup-plugin-babel": "^3.0.5",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-uglify": "^4.0.0"
+  },
+  "dependencies": {
+    "react": "^16.4.1",
+    "react-router-dom": "^4.3.1"
+  }
+}
