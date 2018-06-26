@@ -2,7 +2,7 @@
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
-Will cache the Route ONLY WHILE GOING FOWARD
+Will cache the Route **ONLY** while going forward
 
 **React v16.3+**
 
@@ -21,15 +21,15 @@ yarn add react-router-cache-route
 
 ## Usage
 
-Can use `CacheRoute`, or
+Can use `CacheRoute` with `component` prop, or
 
 Using `cacheComponent` work with `Route`'s `children` prop 
 
-**DO NOT PUT IT IN `Switch` COMPONENT**
+**DO NOT** put it in `Switch` component
 
 ```javascript
 import React from 'react'
-import { HashRouter as Router, Switch, Route } from 'react-router'
+import { HashRouter as Router, Switch, Route } from 'react-router-dom'
 import CacheRoute, { cacheComponent } from 'react-router-cache-route'
 
 import List from './components/List'
