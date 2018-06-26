@@ -50,7 +50,7 @@ export default App
 
 ## Lifecycles
 
-Component with CacheRoute will accept one prop named `cacheLifecycles` witch contains two functions to inject customer Lifecycle `didCache` and `didRecover`
+Component with CacheRoute will accept one prop named `cacheLifecycles` which contains two functions to inject customer Lifecycle `didCache` and `didRecover`
 
 ```javascript
 import React, { Component } from 'react'
