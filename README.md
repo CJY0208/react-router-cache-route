@@ -68,7 +68,7 @@ export default class List extends Component {
   }
 
   componentDidRecover = () => {
-    console.log('List recovered)
+    console.log('List recovered')
   }
 
   render() {
