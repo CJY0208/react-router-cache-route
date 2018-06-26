@@ -4,6 +4,10 @@ Route with cache for `react-router` like `keep-alive` in Vue.
 
 Will cache the Route ONLY WHILE GOING FOWARD
 
+**React v16.3+**
+
+**React-Router v4+**
+
 ## Install
 
 ```bash
