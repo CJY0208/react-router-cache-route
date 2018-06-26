@@ -1,6 +1,6 @@
 {
   "name": "react-router-cache-route",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "cache-route for react-router base on react v16.3+ and router v4+",
   "main": "index.js",
   "directories": {
@@ -15,6 +15,11 @@
   ],
   "author": "CJY0208",
   "license": "ISC",
+  "homepage": "https://github.com/CJY0208/react-router-cache-route",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CJY0208/react-router-cache-route.git"
+  },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-plugin-external-helpers": "^6.22.0",
