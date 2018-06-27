@@ -10,27 +10,17 @@ Will cache the Route **ONLY** while going forward
 
 ## Problem
 
-Using `Route`, component can not be cached while going forward or back which lead to losing data and interaction
-
-![Using Route without cache...](./doc/react-router-cache-route__demo__no__cache.gif)
+Using `Route`, component can not be cached while going forward or back which lead to **losing data and interaction**
 
 ## Reason & Solution
 
-Component would be unmounted while `Route` being unmatched 
+Component would be unmounted when `Route` was unmatched 
 
-After reading source code of `Route` we can found that 
+After reading source code of `Route` we found that using `children` prop as a function could help to control rendering behavior.
 
-Using `children` prop as a function could help to control rendering behavior.
-
-Use "hide node" instead of "delete node" would fix this issue.
+**Hiding instead of Removing** would fix this issue.
 
 https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L118-L127
-
-![Route source code](./doc/Route__source__code.png)
-
-## Effect with CacheRoute
-
-![Using Route with cache...](./doc/react-router-cache-route__demo.gif)
 
 ## Install
 
