@@ -1,30 +1,30 @@
 # CacheRoute
 
-[中文说明](https://github.com/CJY0208/react-router-cache-route/blob/master/README_CN.md)
+搭配 `react-router` 工作的、带缓存功能的路由组件，类似于 `Vue` 中的 `keep-alive` 功能
 
-Route with cache for `react-router` like `keep-alive` in Vue.
-
-Will cache the Route **ONLY** while going forward
+注意：目前只在 **路由前进时** 进行缓存
 
 **React v16.3+**
 
 **React-Router v4+**
 
-## Problem
+## 遇到的问题
 
-Using `Route`, component can not be cached while going forward or back which lead to **losing data and interaction**
+使用 `Route` 时，路由对应的组件在前进或后退无法被缓存，导致了 **数据和行为的丢失**
 
-## Reason & Solution
+例如：列表页滚动到底部后，点击跳转到详情页，返回后会回到列表页顶部，丢失了滚动位置和数据的记录
 
-Component would be unmounted when `Route` was unmatched 
+## 原因 & 解决方案
 
-After reading source code of `Route` we found that using `children` prop as a function could help to control rendering behavior.
+`Route` 中配置的组件在路径不匹配时会被卸载（render 方法中 return null），对应的真实节点也将从 dom 树中删除
 
-**Hiding instead of Removing** would fix this issue.
+在阅读了 `Route` 的源码后我们发现可以将 `children` 当作方法来使用，以帮助我们手动控制渲染的行为
+
+**隐藏替代删除** 可以解决遇到的问题
 
 https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L118-L127
 
-## Install
+## 安装
 
 ```bash
 npm install react-router-cache-route --save
@@ -35,13 +35,13 @@ or
 yarn add react-router-cache-route
 ```
 
-## Usage
+## 使用方法
 
-Can use `CacheRoute` with `component` prop, or
+可以使用 `CacheRoute` 组件的 `component` 属性装载组件，或者
 
-Using `cacheComponent` work with `Route`'s `children` prop 
+配合 `Route` 组件的 `children` 属性使用 `cacheComponent` 方法
 
-**DO NOT** put it in `Switch` component
+注意：缓存语句不要写在 `Switch` 组件当中，因为 `Switch` 组件会卸载掉所有非匹配状态下的路由
 
 ```javascript
 import React from 'react'
@@ -68,9 +68,9 @@ const App = () => (
 export default App
 ```
 
-## Lifecycles
+## 额外的生命周期
 
-Component with CacheRoute will accept one prop named `cacheLifecycles` which contains two functions to inject customer Lifecycle `didCache` and `didRecover`
+使用 `CacheRoute` 的组将将会得到一个名为 `cacheLifecycles` 的属性，里面包含两个额外生命周期的注入函数 `didCache` 和 `didRecover`，分别用在组件 **被缓存** 和 **被恢复** 时
 
 ```javascript
 import React, { Component } from 'react'
