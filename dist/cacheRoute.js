@@ -184,6 +184,35 @@ var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prev
 
 var CacheComponent = function (_Component) {
   inherits(CacheComponent, _Component);
+
+  function CacheComponent() {
+    var _ref;
+
+    var _temp, _this, _ret;
+
+    classCallCheck(this, CacheComponent);
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = CacheComponent.__proto__ || Object.getPrototypeOf(CacheComponent)).call.apply(_ref, [this].concat(args))), _this), _this.state = getDerivedStateFromProps(_this.props, {
+      cached: false,
+      matched: false
+    }), _this.componentWillReceiveProps = !React__default.version.startsWith('16.3') ? function (nextProps) {
+      var nextState = getDerivedStateFromProps(nextProps, _this.state);
+      _this.setState(nextState);
+    } : undefined, _this.cacheLifecycles = {
+      __listener: {},
+      didCache: function didCache(listener) {
+        _this.cacheLifecycles.__listener['didCache'] = listener;
+      },
+      didRecover: function didRecover(listener) {
+        _this.cacheLifecycles.__listener['didRecover'] = listener;
+      }
+    }, _temp), possibleConstructorReturn(_this, _ret);
+  }
+
   createClass(CacheComponent, [{
     key: 'render',
     value: function render() {
@@ -198,55 +227,19 @@ var CacheComponent = function (_Component) {
         run(this.props, 'children', this.cacheLifecycles)
       ) : null;
     }
-  }]);
 
-  function CacheComponent(props) {
-    var _ref;
-
-    classCallCheck(this, CacheComponent);
-
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    var _this = possibleConstructorReturn(this, (_ref = CacheComponent.__proto__ || Object.getPrototypeOf(CacheComponent)).call.apply(_ref, [this, props].concat(args)));
-
-    _this.componentWillReceiveProps = !React__default.version.startsWith('16.3') ? function (nextProps) {
-      var nextState = getDerivedStateFromProps(nextProps, _this.state);
-      _this.setState(nextState);
-    } : undefined;
-    _this.cacheLifecycles = {
-      __listener: {},
-      didCache: function didCache(listener) {
-        _this.cacheLifecycles.__listener['didCache'] = listener;
-      },
-      didRecover: function didRecover(listener) {
-        _this.cacheLifecycles.__listener['didRecover'] = listener;
-      }
-    };
+    /**
+     * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
+     * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
+     */
 
 
-    var matched = !!props.match;
-    _this.state = {
-      cached: matched,
-      matched: matched
-    };
-    return _this;
-  }
+    /**
+     * Compatible React 16.3 -
+     * 兼容 React 16.3 - 版本
+     */
 
-  /**
-   * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
-   * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
-   */
-
-
-  /**
-   * Compatible React 16.3 -
-   * 兼容 React 16.3 - 版本
-   */
-
-
-  createClass(CacheComponent, [{
+  }, {
     key: 'componentDidUpdate',
     value: function componentDidUpdate(prevProps, prevState) {
       if (!prevState.cached || !this.state.cached) {
@@ -402,6 +395,7 @@ var CacheRoute = function (_Component) {
   return CacheRoute;
 }(React.Component);
 
+CacheRoute.componentName = 'CacheRoute';
 CacheRoute.propTypes = {
   component: PropTypes.func,
   render: PropTypes.func,
@@ -447,7 +441,7 @@ var CacheSwitch = function (_Switch) {
         var match = __matched__already ? null : reactRouterDom.matchPath(location.pathname, { path: path, exact: exact, strict: strict, sensitive: sensitive }, route.match);
 
         var child = void 0;
-        switch (get(element, 'type.name')) {
+        switch (get(element, 'type.componentName')) {
           case 'CacheRoute':
             child = React__default.cloneElement(element, {
               location: location,

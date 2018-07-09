@@ -72,15 +72,10 @@ export default class CacheComponent extends Component {
     ) : null
   }
 
-  constructor(props, ...args) {
-    super(props, ...args)
-
-    const matched = !!props.match
-    this.state = {
-      cached: matched,
-      matched
-    }
-  }
+  state = getDerivedStateFromProps(this.props, {
+    cached: false,
+    matched: false
+  })
 
   /**
    * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +

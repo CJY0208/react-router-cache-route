@@ -40,7 +40,7 @@ export default class CacheSwitch extends Switch {
           )
 
       let child
-      switch (get(element, 'type.name')) {
+      switch (get(element, 'type.componentName')) {
         case 'CacheRoute':
           child = React.cloneElement(element, {
             location,

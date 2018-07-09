@@ -7,6 +7,8 @@ import cache from '../core/cache'
 const isEmptyChildren = children => React.Children.count(children) === 0
 
 export default class CacheRoute extends Component {
+  static componentName = 'CacheRoute'
+
   static propTypes = {
     component: PropTypes.func,
     render: PropTypes.func,
