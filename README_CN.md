@@ -2,9 +2,9 @@
 
 搭配 `react-router` 工作的、带缓存功能的路由组件，类似于 `Vue` 中的 `keep-alive` 功能
 
-注意：目前只在 **路由前进时** 进行缓存
+~~注意：目前只在 **路由前进时** 进行缓存~~
 
-**React v16.3+**
+~~**React v16.3+**~~ （兼容了 React v16.3 以下版本）
 
 **React-Router v4+**
 
@@ -29,24 +29,23 @@ https://github.com/ReactTraining/react-router/blob/master/packages/react-router/
 ```bash
 npm install react-router-cache-route --save
 ```
-or 
-
-```bash
-yarn add react-router-cache-route
-```
 
 ## 使用方法
 
-可以使用 `CacheRoute` 组件的 `component` 属性装载组件，或者
+可以使用 `CacheRoute` 组件的 `component`， `render`， `children` 属性装载组件，~~或者~~
 
-配合 `Route` 组件的 `children` 属性使用 `cacheComponent` 方法
+~~配合 `Route` 组件的 `children` 属性使用 `cacheComponent` 方法~~
 
-注意：缓存语句不要写在 `Switch` 组件当中，因为 `Switch` 组件会卸载掉所有非匹配状态下的路由
+注意：缓存语句不要写在 `Switch` 组件当中，因为 `Switch` 组件会卸载掉所有非匹配状态下的路由，需使用 `CacheSwitch` 替代 `Switch`
+
+使用 `when` 属性决定何时使用缓存功能，可选值为 [`forward`, `back`, `always`] ，默认值为 `forward`
+
+使用 `className` 属性给包裹组件添加自定义样式
 
 ```javascript
 import React from 'react'
 import { HashRouter as Router, Switch, Route } from 'react-router-dom'
-import CacheRoute, { cacheComponent } from 'react-router-cache-route'
+import CacheRoute, { CacheSwitch } from 'react-router-cache-route'
 
 import List from './components/List'
 import Item from './components/Item'
@@ -56,12 +55,32 @@ import Item2 from './components/Item2'
 
 const App = () => (
   <Router>
-    <CacheRoute exact path="/list" component={List} />
-    <Route exact path="/list2" children={cacheComponent(List2)} />
+    {/* 可使用 render, children prop
+      <CacheRoute exact path="/list" render={props => <List {...props} />} />
+      或
+      <CacheRoute exact path="/list">
+        {props => <List {...props} />}
+      </CacheRoute>
+      或
+      <CacheRoute exact path="/list">
+        <div>Support muiltple children</div>
+        <List />
+      </CacheRoute>
+    */}
+    <CacheRoute exact path="/list" component={List} when="always" /> 
     <Switch>
       <Route exact path="/item/:id" component={Item} />
-      <Route exact path="/item2/:id" component={Item2} />
     </Switch>
+
+    <CacheSwitch>
+      <CacheRoute exact path="/list2" component={List2} className="customer-style"/>
+      <Route exact path="/item2/:id" component={Item2} />
+      <Route
+        render={() => (
+          <div>Nothing matched</div>
+        )}
+      />
+    </CacheSwitch>
   </Router>
 )
 
@@ -70,7 +89,7 @@ export default App
 
 ## 额外的生命周期
 
-使用 `CacheRoute` 的组将将会得到一个名为 `cacheLifecycles` 的属性，里面包含两个额外生命周期的注入函数 `didCache` 和 `didRecover`，分别用在组件 **被缓存** 和 **被恢复** 时
+使用 `CacheRoute` 的组件将会得到一个名为 `cacheLifecycles` 的属性，里面包含两个额外生命周期的注入函数 `didCache` 和 `didRecover`，分别用在组件 **被缓存** 和 **被恢复** 时
 
 ```javascript
 import React, { Component } from 'react'

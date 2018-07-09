@@ -23,6 +23,7 @@
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
@@ -32,6 +33,7 @@
     "rollup-plugin-uglify": "^4.0.0"
   },
   "dependencies": {
+    "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-router-dom": "^4.3.1"
   }

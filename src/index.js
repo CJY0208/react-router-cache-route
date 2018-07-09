@@ -1,9 +1,3 @@
-export CacheRoute from './CacheRoute'
-export CacheComponent, { cacheComponent } from './CacheComponent'
-export CacheSwitch from './CacheSwitch'
-
-// export default {
-//   CacheRoute,
-//   CacheComponent,
-//   cacheComponent
-// }
+export default from './components/CacheRoute'
+export CacheRoute from './components/CacheRoute'
+export CacheSwitch from './components/CacheSwitch'

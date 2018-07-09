@@ -1,12 +1,6 @@
-import {
-  isString,
-  isExist,
-  isUndefined,
-  isFunction
-} from '../is'
+import { isString, isExist, isUndefined, isFunction } from '../is'
 
 export const get = (obj, keys = [], defaultValue) => {
-
   keys = isString(keys) ? keys.split('.') : keys
 
   let result

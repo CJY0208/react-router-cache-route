@@ -4,9 +4,9 @@
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
-Will cache the Route **ONLY** while going forward
+~~Will cache the Route **ONLY** while going forward~~
 
-**React v16.3+**
+~~React v16.3+~~ (Compatible React 16.3- now)
 
 **React-Router v4+**
 
@@ -29,24 +29,23 @@ https://github.com/ReactTraining/react-router/blob/master/packages/react-router/
 ```bash
 npm install react-router-cache-route --save
 ```
-or 
-
-```bash
-yarn add react-router-cache-route
-```
 
 ## Usage
 
-Can use `CacheRoute` with `component` prop, or
+Can use `CacheRoute` with `component`, `render`, `children` prop, ~~or~~
 
-Using `cacheComponent` work with `Route`'s `children` prop 
+~~Using `cacheComponent` work with `Route`'s `children` prop~~
 
-**DO NOT** put it in `Switch` component
+**DO NOT** put it in `Switch` component, use `CacheSwitch` instead
+
+Use `when` prop to decide when you need to use the cache, the optional value is [`forward`, `back`, `always`] , `forward` default
+
+Use `className` prop for adding customer style to cache wrapper component
 
 ```javascript
 import React from 'react'
 import { HashRouter as Router, Switch, Route } from 'react-router-dom'
-import CacheRoute, { cacheComponent } from 'react-router-cache-route'
+import CacheRoute, { CacheSwitch } from 'react-router-cache-route'
 
 import List from './components/List'
 import Item from './components/Item'
@@ -56,12 +55,32 @@ import Item2 from './components/Item2'
 
 const App = () => (
   <Router>
-    <CacheRoute exact path="/list" component={List} />
-    <Route exact path="/list2" children={cacheComponent(List2)} />
+    {/* use render, children prop would be ok
+      <CacheRoute exact path="/list" render={props => <List {...props} />} />
+      or 
+      <CacheRoute exact path="/list">
+        {props => <List {...props} />}
+      </CacheRoute>
+      or
+      <CacheRoute exact path="/list">
+        <div>Support muiltple children</div>
+        <List />
+      </CacheRoute>
+    */}
+    <CacheRoute exact path="/list" component={List} when="always" /> 
     <Switch>
       <Route exact path="/item/:id" component={Item} />
-      <Route exact path="/item2/:id" component={Item2} />
     </Switch>
+
+    <CacheSwitch>
+      <CacheRoute exact path="/list2" component={List2} className="customer-style"/>
+      <Route exact path="/item2/:id" component={Item2} />
+      <Route
+        render={() => (
+          <div>Nothing matched</div>
+        )}
+      />
+    </CacheSwitch>
   </Router>
 )
 
