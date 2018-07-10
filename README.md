@@ -40,7 +40,7 @@ Can use `CacheRoute` with `component`, `render`, `children` prop, ~~or~~
 
 Use `when` prop to decide when you need to use the cache, the optional value is [`forward`, `back`, `always`] , `forward` default
 
-Use `className` prop for adding customer style to cache wrapper component
+Use `className` prop for adding custom style to cache wrapper component
 
 ```javascript
 import React from 'react'
@@ -55,7 +55,8 @@ import Item2 from './components/Item2'
 
 const App = () => (
   <Router>
-    {/* use render, children prop would be ok
+    {/* 
+      Can also use render, children props
       <CacheRoute exact path="/list" render={props => <List {...props} />} />
       or 
       <CacheRoute exact path="/list">
@@ -63,7 +64,9 @@ const App = () => (
       </CacheRoute>
       or
       <CacheRoute exact path="/list">
-        <div>Support muiltple children</div>
+        <div>
+          Support muiltple children
+        </div>
         <List />
       </CacheRoute>
     */}
@@ -73,11 +76,11 @@ const App = () => (
     </Switch>
 
     <CacheSwitch>
-      <CacheRoute exact path="/list2" component={List2} className="customer-style"/>
+      <CacheRoute exact path="/list2" component={List2} className="custom-style"/>
       <Route exact path="/item2/:id" component={Item2} />
       <Route
         render={() => (
-          <div>Nothing matched</div>
+          <div>404 Not Found</div>
         )}
       />
     </CacheSwitch>

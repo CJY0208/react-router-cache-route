@@ -55,7 +55,8 @@ import Item2 from './components/Item2'
 
 const App = () => (
   <Router>
-    {/* 可使用 render, children prop
+    {/*
+      也可使用 render, children prop
       <CacheRoute exact path="/list" render={props => <List {...props} />} />
       或
       <CacheRoute exact path="/list">
@@ -63,7 +64,9 @@ const App = () => (
       </CacheRoute>
       或
       <CacheRoute exact path="/list">
-        <div>Support muiltple children</div>
+        <div>
+          支持多个子组件
+        </div>
         <List />
       </CacheRoute>
     */}
@@ -73,11 +76,11 @@ const App = () => (
     </Switch>
 
     <CacheSwitch>
-      <CacheRoute exact path="/list2" component={List2} className="customer-style"/>
+      <CacheRoute exact path="/list2" component={List2} className="custom-style"/>
       <Route exact path="/item2/:id" component={Item2} />
       <Route
         render={() => (
-          <div>Nothing matched</div>
+          <div>404 未找到页面</div>
         )}
       />
     </CacheSwitch>

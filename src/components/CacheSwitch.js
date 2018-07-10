@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Switch, matchPath } from 'react-router-dom'
 
-import { isExist, isNull } from '../helpers/is'
+import { isNull } from '../helpers/is'
 import { get } from '../helpers/try'
 
 export default class CacheSwitch extends Switch {

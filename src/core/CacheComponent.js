@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 
 import { run, get } from '../helpers/try'
 
+const __new__lifecycles = React.version.startsWith('16.3')
+
 const getDerivedStateFromProps = (nextProps, prevState) => {
   let { match: nextPropsMatch, when = 'forward' } = nextProps
 
@@ -23,17 +25,37 @@ const getDerivedStateFromProps = (nextProps, prevState) => {
     }
   }
 
-  if (
-    when !== 'always' &&
-    prevState.matched &&
-    !nextPropsMatch &&
-    ((when !== 'back' && nextProps.history.action === 'POP') ||
-      (when !== 'forward' &&
-        ['PUSH', 'REPLACE'].includes(nextProps.history.action)))
-  ) {
-    return {
-      cached: false,
-      matched: false
+  /**
+   * Determines whether it needs to cancel the cache based on the next unmatched props action
+   * 
+   * 根据下个未匹配状态动作决定是否需要取消缓存
+   */
+  if (prevState.matched && !nextPropsMatch) {
+    const nextAction = get(nextProps, 'history.action')
+
+    let __cancel__cache = false    
+
+    switch (when) {
+      case 'always':
+        break      
+      case 'back':
+        if (['PUSH', 'REPLACE'].includes(nextAction)) {
+          __cancel__cache = true
+        }
+
+        break
+      case 'forward':
+      default:
+        if (nextAction === 'POP') {
+          __cancel__cache = true
+        }
+    }
+
+    if (__cancel__cache) {
+      return {
+        cached: false,
+        matched: false
+      }
     }
   }
 
@@ -81,7 +103,7 @@ export default class CacheComponent extends Component {
    * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
    * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
    */
-  static getDerivedStateFromProps = React.version.startsWith('16.3')
+  static getDerivedStateFromProps = __new__lifecycles
     ? getDerivedStateFromProps
     : undefined
 
@@ -89,10 +111,10 @@ export default class CacheComponent extends Component {
    * Compatible React 16.3 -
    * 兼容 React 16.3 - 版本
    */
-  componentWillReceiveProps = !React.version.startsWith('16.3')
+  componentWillReceiveProps = !__new__lifecycles
     ? nextProps => {
-        const nextState = getDerivedStateFromProps(nextProps, this.state)
-        this.setState(nextState)
+        const nextState = 
+        this.setState(getDerivedStateFromProps(nextProps, this.state))
       }
     : undefined
 
@@ -102,11 +124,11 @@ export default class CacheComponent extends Component {
     }
 
     if (prevState.matched === true && this.state.matched === false) {
-      run(this, 'cacheLifecycles.__listener.didCache')
+      return run(this, 'cacheLifecycles.__listener.didCache')
     }
 
     if (prevState.matched === false && this.state.matched === true) {
-      run(this, 'cacheLifecycles.__listener.didRecover')
+      return run(this, 'cacheLifecycles.__listener.didRecover')
     }
   }
 

@@ -147,6 +147,8 @@ var possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
+var __new__lifecycles = React__default.version.startsWith('16.3');
+
 var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prevState) {
   var nextPropsMatch = nextProps.match,
       _nextProps$when = nextProps.when,
@@ -170,11 +172,38 @@ var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prev
     };
   }
 
-  if (when !== 'always' && prevState.matched && !nextPropsMatch && (when !== 'back' && nextProps.history.action === 'POP' || when !== 'forward' && ['PUSH', 'REPLACE'].includes(nextProps.history.action))) {
-    return {
-      cached: false,
-      matched: false
-    };
+  /**
+   * Determines whether it needs to cancel the cache based on the next unmatched props action
+   * 
+   * 根据下个未匹配状态动作决定是否需要取消缓存
+   */
+  if (prevState.matched && !nextPropsMatch) {
+    var nextAction = get(nextProps, 'history.action');
+
+    var __cancel__cache = false;
+
+    switch (when) {
+      case 'always':
+        break;
+      case 'back':
+        if (['PUSH', 'REPLACE'].includes(nextAction)) {
+          __cancel__cache = true;
+        }
+
+        break;
+      case 'forward':
+      default:
+        if (nextAction === 'POP') {
+          __cancel__cache = true;
+        }
+    }
+
+    if (__cancel__cache) {
+      return {
+        cached: false,
+        matched: false
+      };
+    }
   }
 
   return {
@@ -199,9 +228,8 @@ var CacheComponent = function (_Component) {
     return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = CacheComponent.__proto__ || Object.getPrototypeOf(CacheComponent)).call.apply(_ref, [this].concat(args))), _this), _this.state = getDerivedStateFromProps(_this.props, {
       cached: false,
       matched: false
-    }), _this.componentWillReceiveProps = !React__default.version.startsWith('16.3') ? function (nextProps) {
-      var nextState = getDerivedStateFromProps(nextProps, _this.state);
-      _this.setState(nextState);
+    }), _this.componentWillReceiveProps = !__new__lifecycles ? function (nextProps) {
+      var nextState = _this.setState(getDerivedStateFromProps(nextProps, _this.state));
     } : undefined, _this.cacheLifecycles = {
       __listener: {},
       didCache: function didCache(listener) {
@@ -247,11 +275,11 @@ var CacheComponent = function (_Component) {
       }
 
       if (prevState.matched === true && this.state.matched === false) {
-        run(this, 'cacheLifecycles.__listener.didCache');
+        return run(this, 'cacheLifecycles.__listener.didCache');
       }
 
       if (prevState.matched === false && this.state.matched === true) {
-        run(this, 'cacheLifecycles.__listener.didRecover');
+        return run(this, 'cacheLifecycles.__listener.didRecover');
       }
     }
   }, {
@@ -273,7 +301,7 @@ CacheComponent.propsTypes = {
 CacheComponent.defaultProps = {
   when: 'forward'
 };
-CacheComponent.getDerivedStateFromProps = React__default.version.startsWith('16.3') ? getDerivedStateFromProps : undefined;
+CacheComponent.getDerivedStateFromProps = __new__lifecycles ? getDerivedStateFromProps : undefined;
 
 var Updatable = function (_Component) {
   inherits(Updatable, _Component);

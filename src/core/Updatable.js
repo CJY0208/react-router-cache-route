@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { run, get } from '../helpers/try'
+import { get } from '../helpers/try'
 import { isExist } from '../helpers/is'
 
 export default class Updatable extends Component {
