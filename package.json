@@ -1,6 +1,6 @@
 {
   "name": "react-router-cache-route",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "cache-route for react-router base on react v15+ and router v4+",
   "main": "index.js",
   "directories": {
@@ -22,6 +22,11 @@
     "type": "git",
     "url": "git+https://github.com/CJY0208/react-router-cache-route.git"
   },
+  "peerDependencies": {
+    "prop-types": ">=15",
+    "react": ">=15",
+    "react-router-dom": ">=4"
+  },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-plugin-external-helpers": "^6.22.0",
@@ -33,10 +38,5 @@
     "rollup-plugin-babel": "^3.0.5",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-uglify": "^4.0.0"
-  },
-  "dependencies": {
-    "prop-types": "^15.x",
-    "react": "^15.x",
-    "react-router-dom": "^4.x"
   }
 }
