@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { get } from '../helpers/try'
@@ -6,15 +6,11 @@ import { isExist } from '../helpers/is'
 
 export default class Updatable extends Component {
   static propsTypes = {
-    component: PropTypes.node,
+    render: PropTypes.func.isRequired,
     match: PropTypes.object.isRequired
   }
 
-  render() {
-    const { component: Component, ...props } = this.props
-
-    return <Component {...props} />
-  }
+  render = () => this.props.render()
 
   shouldComponentUpdate(nextProps) {
     return (
