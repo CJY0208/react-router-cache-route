@@ -307,21 +307,22 @@ var Updatable = function (_Component) {
   inherits(Updatable, _Component);
 
   function Updatable() {
+    var _ref;
+
+    var _temp, _this, _ret;
+
     classCallCheck(this, Updatable);
-    return possibleConstructorReturn(this, (Updatable.__proto__ || Object.getPrototypeOf(Updatable)).apply(this, arguments));
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = Updatable.__proto__ || Object.getPrototypeOf(Updatable)).call.apply(_ref, [this].concat(args))), _this), _this.render = function () {
+      return _this.props.render();
+    }, _temp), possibleConstructorReturn(_this, _ret);
   }
 
   createClass(Updatable, [{
-    key: 'render',
-    value: function render() {
-      var _props = this.props,
-          Component = _props.component,
-          props = objectWithoutProperties(_props, ['component']);
-
-
-      return React__default.createElement(Component, props);
-    }
-  }, {
     key: 'shouldComponentUpdate',
     value: function shouldComponentUpdate(nextProps) {
       return isExist(nextProps.match) && get(nextProps, 'match.__CacheRoute__computedMatch__null') !== true;
@@ -331,20 +332,8 @@ var Updatable = function (_Component) {
 }(React.Component);
 
 Updatable.propsTypes = {
-  component: PropTypes.node,
+  render: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired
-};
-
-var cache = function cache(component, config) {
-  return function (props) {
-    return React__default.createElement(
-      CacheComponent,
-      _extends({}, props, config),
-      function (cacheLifecycles) {
-        return React__default.createElement(Updatable, _extends({}, props, { cacheLifecycles: cacheLifecycles, component: component }));
-      }
-    );
-  };
 };
 
 var isEmptyChildren = function isEmptyChildren(children) {
@@ -355,55 +344,33 @@ var CacheRoute = function (_Component) {
   inherits(CacheRoute, _Component);
 
   function CacheRoute() {
-    var _ref;
-
-    var _temp, _this, _ret;
-
     classCallCheck(this, CacheRoute);
-
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = CacheRoute.__proto__ || Object.getPrototypeOf(CacheRoute)).call.apply(_ref, [this].concat(args))), _this), _this.__child__wrapper__cache = new Map(), _temp), possibleConstructorReturn(_this, _ret);
+    return possibleConstructorReturn(this, (CacheRoute.__proto__ || Object.getPrototypeOf(CacheRoute)).apply(this, arguments));
   }
 
   createClass(CacheRoute, [{
-    key: 'componentWillUnmount',
-    value: function componentWillUnmount() {
-      this.__child__wrapper__cache.clear();
-    }
-  }, {
     key: 'render',
     value: function render() {
       var _props = this.props,
-          children = _props.children,
-          _props$render = _props.render,
-          render = _props$render === undefined ? children : _props$render,
-          _props$component = _props.component,
-          component = _props$component === undefined ? render : _props$component,
+          _children = _props.children,
+          _render = _props.render,
+          component = _props.component,
           className = _props.className,
           when = _props.when,
-          props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when']);
+          __rest__route__props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when']);
 
       /**
        * Note:
-       * If children prop is a React Element, define the corresponding wrapper component and cache the definition of the wrapper component with Map
-       * (If the definition of the wrapper component is not cached, it will be redefined and re-rendered, causing in a failed component cache)
+       * If children prop is a React Element, define the corresponding wrapper component for supporting multiple children
        *
-       * 说明：如果 children 属性是 React Element 则定义对应的包裹组件，并使用 Map 缓存包裹组件的定义（若不缓存包裹组件的定义会造成其重新定义、渲染，导致组件的缓存失效）
+       * 说明：如果 children 属性是 React Element 则定义对应的包裹组件以支持多个子组件
        */
 
-      if (React__default.isValidElement(children) || !isEmptyChildren(children)) {
-        if (this.__child__wrapper__cache.has(children)) {
-          component = this.__child__wrapper__cache.get(children);
-        } else {
-          component = function component() {
-            return children;
-          };
 
-          this.__child__wrapper__cache.set(children, component);
-        }
+      if (React__default.isValidElement(_children) || !isEmptyChildren(_children)) {
+        _render = function render() {
+          return _children;
+        };
       }
 
       return (
@@ -411,11 +378,27 @@ var CacheRoute = function (_Component) {
          * Only children prop of Route can help to control rendering behavior
          * 只有 Router 的 children 属性有助于主动控制渲染行为
          */
-        React__default.createElement(reactRouterDom.Route, _extends({}, props, {
-          children: cache(component, {
-            className: className,
-            when: when
-          })
+        React__default.createElement(reactRouterDom.Route, _extends({}, __rest__route__props, {
+          children: function children(props) {
+            return React__default.createElement(
+              CacheComponent,
+              _extends({}, props, { when: when, className: className }),
+              function (cacheLifecycles) {
+                return React__default.createElement(Updatable, {
+                  match: props.match,
+                  render: function render() {
+                    Object.assign(props, { cacheLifecycles: cacheLifecycles });
+
+                    if (component) {
+                      return React__default.createElement(component, props);
+                    }
+
+                    return run(_render || _children, undefined, props);
+                  }
+                });
+              }
+            );
+          }
         }))
       );
     }
