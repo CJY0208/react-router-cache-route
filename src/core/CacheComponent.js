@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 
 import { run, get } from '../helpers/try'
 
-const __new__lifecycles = React.version.startsWith('16.3')
+const __new__lifecycles =
+  Number(get(run(React, 'version.match', /^\d*\.\d*/), [0])) >= 16.3
 
 const getDerivedStateFromProps = (nextProps, prevState) => {
   let { match: nextPropsMatch, when = 'forward' } = nextProps
@@ -27,17 +28,17 @@ const getDerivedStateFromProps = (nextProps, prevState) => {
 
   /**
    * Determines whether it needs to cancel the cache based on the next unmatched props action
-   * 
+   *
    * 根据下个未匹配状态动作决定是否需要取消缓存
    */
   if (prevState.matched && !nextPropsMatch) {
     const nextAction = get(nextProps, 'history.action')
 
-    let __cancel__cache = false    
+    let __cancel__cache = false
 
     switch (when) {
       case 'always':
-        break      
+        break
       case 'back':
         if (['PUSH', 'REPLACE'].includes(nextAction)) {
           __cancel__cache = true
@@ -113,8 +114,9 @@ export default class CacheComponent extends Component {
    */
   componentWillReceiveProps = !__new__lifecycles
     ? nextProps => {
-        const nextState = 
-        this.setState(getDerivedStateFromProps(nextProps, this.state))
+        const nextState = this.setState(
+          getDerivedStateFromProps(nextProps, this.state)
+        )
       }
     : undefined
 

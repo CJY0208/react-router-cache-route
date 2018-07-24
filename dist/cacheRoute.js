@@ -147,7 +147,7 @@ var possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
-var __new__lifecycles = React__default.version.startsWith('16.3');
+var __new__lifecycles = Number(get(run(React__default, 'version.match', /^\d*\.\d*/), [0])) >= 16.3;
 
 var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prevState) {
   var nextPropsMatch = nextProps.match,
@@ -174,7 +174,7 @@ var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prev
 
   /**
    * Determines whether it needs to cancel the cache based on the next unmatched props action
-   * 
+   *
    * 根据下个未匹配状态动作决定是否需要取消缓存
    */
   if (prevState.matched && !nextPropsMatch) {
