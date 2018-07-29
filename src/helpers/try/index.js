@@ -32,3 +32,9 @@ export const run = (obj, keys = [], ...args) => {
 
   return isFunction(func) ? func.call(context, ...args) : func
 }
+
+export const value = (...values) =>
+  values.reduce(
+    (value, nextValue) => (isUndefined(value) ? run(nextValue) : run(value)),
+    undefined
+  )

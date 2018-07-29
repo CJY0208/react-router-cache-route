@@ -40,7 +40,9 @@ Can use `CacheRoute` with `component`, `render`, `children` prop, ~~or~~
 
 Use `when` prop to decide when you need to use the cache, the optional value is [`forward`, `back`, `always`] , `forward` default
 
-Use `className` prop for adding custom style to cache wrapper component
+Use `className` prop for adding custom style to the cache wrapper component
+
+You can also customize how the cached components are hidden using `behavior` props which would return a `props` effective on the wrapper component
 
 ```javascript
 import React from 'react'
@@ -76,7 +78,24 @@ const App = () => (
     </Switch>
 
     <CacheSwitch>
-      <CacheRoute exact path="/list2" component={List2} className="custom-style"/>
+      <CacheRoute 
+        exact 
+        path="/list2" 
+        component={List2} 
+        className="custom-style"
+        behavior={cached => (cached ? {
+          style: {
+            position: 'absolute',
+            zIndex: -9999,
+            opacity: 0,
+            visibility: 'hidden',
+            pointerEvents: 'none'
+          },
+          className: '__CacheRoute__cached'
+        } : {
+          className: '__CacheRoute__uncached'
+        })}
+      />
       <Route exact path="/item2/:id" component={Item2} />
       <Route
         render={() => (

@@ -48,3 +48,26 @@ run(obj, 'name') // CJY
 // 保护上下文
 run(obj, 'greet') // hello, I'm CJY
 ```
+
+## value 多层默认值（只在值为`undefined`情况下生效）
+
+```javascript
+var v1, v2, v3 = 'default'
+
+value(v1, v2, v3) // default
+
+value(v1, 0, v3) // 0
+
+// 可传递执行函数
+value(
+  v1, 
+  () => {
+    console.log('v1没有，尝试v2')
+    return v2
+  },
+  () => {
+    console.log('v2也没有，尝试v3')
+    return v3
+  },
+) // default
+```

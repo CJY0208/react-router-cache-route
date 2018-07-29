@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { run, get } from '../helpers/try'
+import { run, get, value } from '../helpers/try'
 
 const __new__lifecycles =
   Number(get(run(React, 'version.match', /^\d*\.\d*/), [0])) >= 16.3
@@ -71,25 +71,35 @@ export default class CacheComponent extends Component {
     match: PropTypes.object.isRequired,
     children: PropTypes.func.isRequired,
     className: PropTypes.string,
-    when: PropTypes.oneOf(['forward', 'back', 'always'])
+    when: PropTypes.oneOf(['forward', 'back', 'always']),
+    behavior: PropTypes.func
   }
 
   static defaultProps = {
-    when: 'forward'
+    when: 'forward',
+    behavior: cached =>
+      cached
+        ? {
+            style: {
+              position: 'absolute',
+              zIndex: -9999,
+              opacity: 0,
+              visibility: 'hidden',
+              pointerEvents: 'none'
+            }
+          }
+        : undefined
   }
 
   render() {
+    const {
+      className: behaviorProps__className = '',
+      ...behaviorProps
+    } = value(this.props.behavior(!this.state.matched), {})
+    const className = `${this.props.className} ${behaviorProps__className}`
+
     return this.state.cached ? (
-      <div
-        className={this.props.className}
-        style={
-          this.state.matched
-            ? {}
-            : {
-                display: 'none'
-              }
-        }
-      >
+      <div className={className.trim()} {...behaviorProps}>
         {run(this.props, 'children', this.cacheLifecycles)}
       </div>
     ) : null

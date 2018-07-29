@@ -73,6 +73,16 @@ var run = function run(obj) {
   return isFunction(func) ? func.call.apply(func, [context].concat(args)) : func;
 };
 
+var value = function value() {
+  for (var _len2 = arguments.length, values = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    values[_key2] = arguments[_key2];
+  }
+
+  return values.reduce(function (value, nextValue) {
+    return isUndefined(value) ? run(nextValue) : run(value);
+  }, undefined);
+};
+
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -244,14 +254,16 @@ var CacheComponent = function (_Component) {
   createClass(CacheComponent, [{
     key: 'render',
     value: function render() {
+      var _value = value(this.props.behavior(!this.state.matched), {}),
+          _value$className = _value.className,
+          behaviorProps__className = _value$className === undefined ? '' : _value$className,
+          behaviorProps = objectWithoutProperties(_value, ['className']);
+
+      var className = this.props.className + ' ' + behaviorProps__className;
+
       return this.state.cached ? React__default.createElement(
         'div',
-        {
-          className: this.props.className,
-          style: this.state.matched ? {} : {
-            display: 'none'
-          }
-        },
+        _extends({ className: className.trim() }, behaviorProps),
         run(this.props, 'children', this.cacheLifecycles)
       ) : null;
     }
@@ -296,10 +308,22 @@ CacheComponent.propsTypes = {
   match: PropTypes.object.isRequired,
   children: PropTypes.func.isRequired,
   className: PropTypes.string,
-  when: PropTypes.oneOf(['forward', 'back', 'always'])
+  when: PropTypes.oneOf(['forward', 'back', 'always']),
+  behavior: PropTypes.func
 };
 CacheComponent.defaultProps = {
-  when: 'forward'
+  when: 'forward',
+  behavior: function behavior(cached) {
+    return cached ? {
+      style: {
+        position: 'absolute',
+        zIndex: -9999,
+        opacity: 0,
+        visibility: 'hidden',
+        pointerEvents: 'none'
+      }
+    } : undefined;
+  }
 };
 CacheComponent.getDerivedStateFromProps = __new__lifecycles ? getDerivedStateFromProps : undefined;
 
@@ -357,7 +381,8 @@ var CacheRoute = function (_Component) {
           component = _props.component,
           className = _props.className,
           when = _props.when,
-          __rest__route__props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when']);
+          behavior = _props.behavior,
+          __rest__route__props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior']);
 
       /**
        * Note:
@@ -382,7 +407,7 @@ var CacheRoute = function (_Component) {
           children: function children(props) {
             return React__default.createElement(
               CacheComponent,
-              _extends({}, props, { when: when, className: className }),
+              _extends({}, props, { when: when, className: className, behavior: behavior }),
               function (cacheLifecycles) {
                 return React__default.createElement(Updatable, {
                   match: props.match,
@@ -412,7 +437,8 @@ CacheRoute.propTypes = {
   render: PropTypes.func,
   children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
   className: PropTypes.string,
-  when: PropTypes.oneOf(['forward', 'back', 'always'])
+  when: PropTypes.oneOf(['forward', 'back', 'always']),
+  behavior: PropTypes.func
 };
 CacheRoute.defaultProps = {
   when: 'forward'

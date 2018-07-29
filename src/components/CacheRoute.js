@@ -16,7 +16,8 @@ export default class CacheRoute extends Component {
     render: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
     className: PropTypes.string,
-    when: PropTypes.oneOf(['forward', 'back', 'always'])
+    when: PropTypes.oneOf(['forward', 'back', 'always']),
+    behavior: PropTypes.func
   }
 
   static defaultProps = {
@@ -30,6 +31,7 @@ export default class CacheRoute extends Component {
       component,
       className,
       when,
+      behavior,
       ...__rest__route__props
     } = this.props
 
@@ -51,10 +53,10 @@ export default class CacheRoute extends Component {
       <Route
         {...__rest__route__props}
         children={props => (
-          <CacheComponent {...props} {...{ when, className }}>
+          <CacheComponent {...props} {...{ when, className, behavior }}>
             {cacheLifecycles => (
               <Updatable
-                match={props.match} 
+                match={props.match}
                 render={() => {
                   Object.assign(props, { cacheLifecycles })
 
@@ -63,7 +65,7 @@ export default class CacheRoute extends Component {
                   }
 
                   return run(render || children, undefined, props)
-                }}                
+                }}
               />
             )}
           </CacheComponent>

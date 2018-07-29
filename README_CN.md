@@ -42,6 +42,8 @@ npm install react-router-cache-route --save
 
 使用 `className` 属性给包裹组件添加自定义样式
 
+也可以使用 `behavior` 属性来自定义缓存状态下组件的隐藏方式，工作方式是根据 `CacheRoute` 当前的缓存状态，返回一个作用于包裹组件的 `props`
+
 ```javascript
 import React from 'react'
 import { HashRouter as Router, Switch, Route } from 'react-router-dom'
@@ -76,7 +78,24 @@ const App = () => (
     </Switch>
 
     <CacheSwitch>
-      <CacheRoute exact path="/list2" component={List2} className="custom-style"/>
+      <CacheRoute 
+        exact 
+        path="/list2" 
+        component={List2} 
+        className="custom-style"
+        behavior={cached => (cached ? {
+          style: {
+            position: 'absolute',
+            zIndex: -9999,
+            opacity: 0,
+            visibility: 'hidden',
+            pointerEvents: 'none'
+          },
+          className: '__CacheRoute__wrapper__cached'
+        } : {
+          className: '__CacheRoute__wrapper__uncached'
+        })}
+      />
       <Route exact path="/item2/:id" component={Item2} />
       <Route
         render={() => (
