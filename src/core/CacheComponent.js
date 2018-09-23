@@ -92,14 +92,16 @@ export default class CacheComponent extends Component {
   }
 
   render() {
-    const {
-      className: behaviorProps__className = '',
-      ...behaviorProps
-    } = value(this.props.behavior(!this.state.matched), {})
-    const className = `${this.props.className} ${behaviorProps__className}`
+    const { className: behavior__className = '', ...behaviorProps } = value(
+      this.props.behavior(!this.state.matched),
+      {}
+    )
+    const { className: props__className = '' } = this.props
+    const className = run(`${props__className} ${behavior__className}`, 'trim')
+    const hasClassName = className !== ''
 
     return this.state.cached ? (
-      <div className={className.trim()} {...behaviorProps}>
+      <div className={hasClassName ? className : undefined} {...behaviorProps}>
         {run(this.props, 'children', this.cacheLifecycles)}
       </div>
     ) : null

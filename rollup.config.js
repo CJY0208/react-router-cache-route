@@ -5,8 +5,9 @@ import { uglify } from 'rollup-plugin-uglify'
 export default {
   input: 'src/index.js',
   output: {
+    name: 'CacheRoute',
     file: 'dist/cacheRoute.min.js',
-    format: 'cjs'
+    format: 'umd'
   },
   external: [
     'react',
