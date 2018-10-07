@@ -32,7 +32,8 @@ export default class CacheRoute extends Component {
       className,
       when,
       behavior,
-      ...__rest__route__props
+      cacheKey,
+      ...__rest__props
     } = this.props
 
     /**
@@ -51,9 +52,12 @@ export default class CacheRoute extends Component {
        * 只有 Router 的 children 属性有助于主动控制渲染行为
        */
       <Route
-        {...__rest__route__props}
+        {...__rest__props}
         children={props => (
-          <CacheComponent {...props} {...{ when, className, behavior }}>
+          <CacheComponent
+            {...props}
+            {...{ when, className, behavior, cacheKey }}
+          >
             {cacheLifecycles => (
               <Updatable
                 match={props.match}

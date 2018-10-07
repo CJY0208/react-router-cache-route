@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import { run, get, value } from '../helpers/try'
+import { register } from './manager'
 
 const __new__lifecycles =
   Number(get(run(React, 'version.match', /^\d*\.\d*/), [0])) >= 16.3
@@ -107,10 +108,18 @@ export default class CacheComponent extends Component {
     ) : null
   }
 
-  state = getDerivedStateFromProps(this.props, {
-    cached: false,
-    matched: false
-  })
+  constructor(props, ...args) {
+    super(props, ...args)
+
+    if (props.cacheKey) {
+      register(props.cacheKey, this)
+    }
+
+    this.state = getDerivedStateFromProps(props, {
+      cached: false,
+      matched: false
+    })
+  }
 
   /**
    * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
@@ -147,7 +156,11 @@ export default class CacheComponent extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return this.state.matched || nextState.matched
+    return (
+      this.state.matched ||
+      nextState.matched ||
+      this.state.cached !== nextState.cached
+    )
   }
 
   cacheLifecycles = {

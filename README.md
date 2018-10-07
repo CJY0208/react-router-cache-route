@@ -141,3 +141,23 @@ export default class List extends Component {
 
 ```
 
+## Drop cache manually
+
+You can manually control the cache with `cacheKey` prop and `dropByCacheKey` function.
+
+```javascript
+import CacheRoute, { dropByCacheKey, getCachingKeys } from 'react-router-cache-route'
+
+...
+<CacheRoute ... cacheKey="MyComponent" />
+...
+
+console.log(getCachingKeys()) // will receive ['MyComponent'] if CacheRoute is cached which `cacheKey` prop is 'MyComponent'
+...
+
+dropByCacheKey('MyComponent')
+...
+```
+
+
+

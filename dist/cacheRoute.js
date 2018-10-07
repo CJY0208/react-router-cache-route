@@ -155,6 +155,70 @@
     return call && (typeof call === "object" || typeof call === "function") ? call : self;
   };
 
+  var slicedToArray = function () {
+    function sliceIterator(arr, i) {
+      var _arr = [];
+      var _n = true;
+      var _d = false;
+      var _e = undefined;
+
+      try {
+        for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+          _arr.push(_s.value);
+
+          if (i && _arr.length === i) break;
+        }
+      } catch (err) {
+        _d = true;
+        _e = err;
+      } finally {
+        try {
+          if (!_n && _i["return"]) _i["return"]();
+        } finally {
+          if (_d) throw _e;
+        }
+      }
+
+      return _arr;
+    }
+
+    return function (arr, i) {
+      if (Array.isArray(arr)) {
+        return arr;
+      } else if (Symbol.iterator in Object(arr)) {
+        return sliceIterator(arr, i);
+      } else {
+        throw new TypeError("Invalid attempt to destructure non-iterable instance");
+      }
+    };
+  }();
+
+  var __components = {};
+
+  var register = function register(key, route) {
+    __components[key] = route;
+  };
+
+  var dropByCacheKey = function dropByCacheKey(key) {
+    run(__components, [key, 'setState'], {
+      cached: false
+    });
+  };
+
+  var getCachingKeys = function getCachingKeys() {
+    return Object.entries(__components).filter(function (_ref) {
+      var _ref2 = slicedToArray(_ref, 2),
+          component = _ref2[1];
+
+      return component.state.cached;
+    }).map(function (_ref3) {
+      var _ref4 = slicedToArray(_ref3, 1),
+          key = _ref4[0];
+
+      return key;
+    });
+  };
+
   var __new__lifecycles = Number(get(run(React__default, 'version.match', /^\d*\.\d*/), [0])) >= 16.3;
 
   var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prevState) {
@@ -221,34 +285,6 @@
 
   var CacheComponent = function (_Component) {
     inherits(CacheComponent, _Component);
-
-    function CacheComponent() {
-      var _ref;
-
-      var _temp, _this, _ret;
-
-      classCallCheck(this, CacheComponent);
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = CacheComponent.__proto__ || Object.getPrototypeOf(CacheComponent)).call.apply(_ref, [this].concat(args))), _this), _this.state = getDerivedStateFromProps(_this.props, {
-        cached: false,
-        matched: false
-      }), _this.componentWillReceiveProps = !__new__lifecycles ? function (nextProps) {
-        var nextState = _this.setState(getDerivedStateFromProps(nextProps, _this.state));
-      } : undefined, _this.cacheLifecycles = {
-        __listener: {},
-        didCache: function didCache(listener) {
-          _this.cacheLifecycles.__listener['didCache'] = listener;
-        },
-        didRecover: function didRecover(listener) {
-          _this.cacheLifecycles.__listener['didRecover'] = listener;
-        }
-      }, _temp), possibleConstructorReturn(_this, _ret);
-    }
-
     createClass(CacheComponent, [{
       key: 'render',
       value: function render() {
@@ -269,19 +305,57 @@
           run(this.props, 'children', this.cacheLifecycles)
         ) : null;
       }
+    }]);
 
-      /**
-       * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
-       * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
-       */
+    function CacheComponent(props) {
+      var _ref;
+
+      classCallCheck(this, CacheComponent);
+
+      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      var _this = possibleConstructorReturn(this, (_ref = CacheComponent.__proto__ || Object.getPrototypeOf(CacheComponent)).call.apply(_ref, [this, props].concat(args)));
+
+      _this.componentWillReceiveProps = !__new__lifecycles ? function (nextProps) {
+        var nextState = _this.setState(getDerivedStateFromProps(nextProps, _this.state));
+      } : undefined;
+      _this.cacheLifecycles = {
+        __listener: {},
+        didCache: function didCache(listener) {
+          _this.cacheLifecycles.__listener['didCache'] = listener;
+        },
+        didRecover: function didRecover(listener) {
+          _this.cacheLifecycles.__listener['didRecover'] = listener;
+        }
+      };
 
 
-      /**
-       * Compatible React 16.3 -
-       * 兼容 React 16.3 - 版本
-       */
+      if (props.cacheKey) {
+        register(props.cacheKey, _this);
+      }
 
-    }, {
+      _this.state = getDerivedStateFromProps(props, {
+        cached: false,
+        matched: false
+      });
+      return _this;
+    }
+
+    /**
+     * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
+     * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
+     */
+
+
+    /**
+     * Compatible React 16.3 -
+     * 兼容 React 16.3 - 版本
+     */
+
+
+    createClass(CacheComponent, [{
       key: 'componentDidUpdate',
       value: function componentDidUpdate(prevProps, prevState) {
         if (!prevState.cached || !this.state.cached) {
@@ -299,7 +373,7 @@
     }, {
       key: 'shouldComponentUpdate',
       value: function shouldComponentUpdate(nextProps, nextState) {
-        return this.state.matched || nextState.matched;
+        return this.state.matched || nextState.matched || this.state.cached !== nextState.cached;
       }
     }]);
     return CacheComponent;
@@ -384,7 +458,8 @@
             className = _props.className,
             when = _props.when,
             behavior = _props.behavior,
-            __rest__route__props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior']);
+            cacheKey = _props.cacheKey,
+            __rest__props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey']);
 
         /**
          * Note:
@@ -405,11 +480,11 @@
            * Only children prop of Route can help to control rendering behavior
            * 只有 Router 的 children 属性有助于主动控制渲染行为
            */
-          React__default.createElement(reactRouterDom.Route, _extends({}, __rest__route__props, {
+          React__default.createElement(reactRouterDom.Route, _extends({}, __rest__props, {
             children: function children(props) {
               return React__default.createElement(
                 CacheComponent,
-                _extends({}, props, { when: when, className: className, behavior: behavior }),
+                _extends({}, props, { when: when, className: className, behavior: behavior, cacheKey: cacheKey }),
                 function (cacheLifecycles) {
                   return React__default.createElement(Updatable, {
                     match: props.match,
@@ -527,6 +602,8 @@
   exports.default = CacheRoute;
   exports.CacheRoute = CacheRoute;
   exports.CacheSwitch = CacheSwitch;
+  exports.dropByCacheKey = dropByCacheKey;
+  exports.getCachingKeys = getCachingKeys;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
