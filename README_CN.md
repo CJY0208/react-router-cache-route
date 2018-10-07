@@ -143,7 +143,7 @@ export default class List extends Component {
 
 ## 手动清除缓存
 
-使用  和 `dropByCacheKey` 函数来手动控制缓存
+使用 `cacheKey` prop 和 `dropByCacheKey` 函数来手动控制缓存
 
 ```javascript
 import CacheRoute, { dropByCacheKey, getCachingKeys } from 'react-router-cache-route'
