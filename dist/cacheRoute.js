@@ -392,11 +392,7 @@
     behavior: function behavior(cached) {
       return cached ? {
         style: {
-          position: 'absolute',
-          zIndex: -9999,
-          opacity: 0,
-          visibility: 'hidden',
-          pointerEvents: 'none'
+          display: 'none'
         }
       } : undefined;
     }
