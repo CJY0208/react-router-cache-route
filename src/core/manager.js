@@ -12,7 +12,7 @@ export const dropByCacheKey = key => {
   })
 }
 
-export const dropCache = () => {
+export const clearCache = () => {
   Object.entries(__components)
     .filter(([, component]) => component.state.cached)
     .forEach(([key]) => run(__components, [key, 'setState'], {
