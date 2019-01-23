@@ -4,9 +4,7 @@
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
-~~Will cache the Route **ONLY** while going forward~~
-
-~~React v16.3+~~ (Compatible React 16.3- now)
+React v16+
 
 **React-Router v4+**
 
@@ -22,7 +20,7 @@ After reading source code of `Route` we found that using `children` prop as a fu
 
 **Hiding instead of Removing** would fix this issue.
 
-https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L118-L127
+https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L42-L63
 
 ## Install
 
@@ -32,9 +30,7 @@ npm install react-router-cache-route --save
 
 ## Usage
 
-Can use `CacheRoute` with `component`, `render`, `children` prop, ~~or~~
-
-~~Using `cacheComponent` work with `Route`'s `children` prop~~
+Can use `CacheRoute` with `component`, `render`, `children` prop
 
 **DO NOT** put it in `Switch` component, use `CacheSwitch` instead
 
