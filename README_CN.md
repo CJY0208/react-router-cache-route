@@ -2,9 +2,7 @@
 
 搭配 `react-router` 工作的、带缓存功能的路由组件，类似于 `Vue` 中的 `keep-alive` 功能
 
-~~注意：目前只在 **路由前进时** 进行缓存~~
-
-~~**React v16.3+**~~ （兼容了 React v16.3 以下版本）
+**React v16+**
 
 **React-Router v4+**
 
@@ -22,7 +20,7 @@
 
 **隐藏替代删除** 可以解决遇到的问题
 
-https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L118-L127
+https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L42-L63
 
 ## 安装
 
@@ -32,9 +30,7 @@ npm install react-router-cache-route --save
 
 ## 使用方法
 
-可以使用 `CacheRoute` 组件的 `component`， `render`， `children` 属性装载组件，~~或者~~
-
-~~配合 `Route` 组件的 `children` 属性使用 `cacheComponent` 方法~~
+可以使用 `CacheRoute` 组件的 `component`， `render`， `children` 属性装载组件
 
 注意：缓存语句不要写在 `Switch` 组件当中，因为 `Switch` 组件会卸载掉所有非匹配状态下的路由，需使用 `CacheSwitch` 替代 `Switch`
 
