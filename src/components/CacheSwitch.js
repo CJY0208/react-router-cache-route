@@ -4,6 +4,7 @@ import { Switch, matchPath } from 'react-router-dom'
 
 import { isNull } from '../helpers/is'
 import { get } from '../helpers/try'
+import { isReactV16plus } from '../helpers/util'
 
 export default class CacheSwitch extends Switch {
   static contextTypes = {
@@ -24,7 +25,9 @@ export default class CacheSwitch extends Switch {
 
     let __matched__already = false
 
-    return React.Children.map(children, element => {
+
+
+    let component = React.Children.map(children, element => {
       if (!React.isValidElement(element)) {
         return null
       }
@@ -34,10 +37,10 @@ export default class CacheSwitch extends Switch {
       const match = __matched__already
         ? null
         : matchPath(
-            location.pathname,
-            { path, exact, strict, sensitive },
-            route.match
-          )
+          location.pathname,
+          { path, exact, strict, sensitive },
+          route.match
+        )
 
       let child
       switch (get(element, 'type.componentName')) {
@@ -56,8 +59,8 @@ export default class CacheSwitch extends Switch {
              */
             computedMatch: isNull(match)
               ? {
-                  __CacheRoute__computedMatch__null: true
-                }
+                __CacheRoute__computedMatch__null: true
+              }
               : match
           })
           break
@@ -74,5 +77,12 @@ export default class CacheSwitch extends Switch {
 
       return child
     })
+
+    if (!isReactV16plus) {
+      component = <div>{component}</div>
+    }
+
+    return component;
+
   }
 }
