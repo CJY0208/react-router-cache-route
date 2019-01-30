@@ -15,9 +15,11 @@ export const dropByCacheKey = key => {
 export const clearCache = () => {
   Object.entries(__components)
     .filter(([, component]) => component.state.cached)
-    .forEach(([key]) => run(__components, [key, 'setState'], {
-      cached: false
-    }))
+    .forEach(([key]) =>
+      run(__components, [key, 'setState'], {
+        cached: false
+      })
+    )
 }
 
 export const getCachingKeys = () =>
