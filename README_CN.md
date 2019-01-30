@@ -2,7 +2,7 @@
 
 搭配 `react-router` 工作的、带缓存功能的路由组件，类似于 `Vue` 中的 `keep-alive` 功能
 
-**React v16+**
+**React v15+**
 
 **React-Router v4+**
 

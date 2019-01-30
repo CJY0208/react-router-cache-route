@@ -4,7 +4,7 @@
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
-**React v16+**
+**React v15+**
 
 **React-Router v4+**
 
