@@ -536,7 +536,6 @@
   function getFragment() {
     switch (true) {
       case isExist(React.PropTypes):
-        console.log('v15');
         return function (_ref) {
           var children = _ref.children;
           return React__default.createElement(
@@ -547,7 +546,6 @@
         };
 
       case isExist(React.Fragment):
-        console.log('v16.2+');
         return function (_ref2) {
           var children = _ref2.children;
           return React__default.createElement(
@@ -558,7 +556,6 @@
         };
 
       default:
-        console.log('v16.2-');
         return function (_ref3) {
           var children = _ref3.children;
           return children;
