@@ -577,10 +577,11 @@
     createClass(CacheSwitch, [{
       key: 'render',
       value: function render() {
-        var route = this.context.router.route;
-        var children = this.props.children;
+        var _props = this.props,
+            children = _props.children,
+            location = _props.location,
+            match = _props.match;
 
-        var location = this.props.location || route.location;
 
         var __matched__already = false;
 
@@ -600,7 +601,7 @@
                 from = _element$props.from;
 
             var path = pathProp || from;
-            var match = __matched__already ? null : reactRouterDom.matchPath(location.pathname, { path: path, exact: exact, strict: strict, sensitive: sensitive }, route.match);
+            var match = __matched__already ? null : reactRouterDom.matchPath(location.pathname, { path: path, exact: exact, strict: strict, sensitive: sensitive }, match);
 
             var child = void 0;
             switch (get(element, 'type.componentName')) {
@@ -641,19 +642,18 @@
     return CacheSwitch;
   }(reactRouterDom.Switch);
 
-  CacheSwitch.contextTypes = {
-    router: PropTypes.shape({
-      route: PropTypes.object.isRequired
-    }).isRequired
-  };
   CacheSwitch.propTypes = {
     children: PropTypes.node,
-    location: PropTypes.object
+    location: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired
   };
+
+
+  var CacheSwitch$1 = reactRouterDom.withRouter(CacheSwitch);
 
   exports.default = CacheRoute;
   exports.CacheRoute = CacheRoute;
-  exports.CacheSwitch = CacheSwitch;
+  exports.CacheSwitch = CacheSwitch$1;
   exports.dropByCacheKey = dropByCacheKey;
   exports.getCachingKeys = getCachingKeys;
   exports.clearCache = clearCache;
