@@ -7,11 +7,10 @@ import { isNull } from '../helpers/is'
 import { get } from '../helpers/try'
 
 class CacheSwitch extends Switch {
-
   static propTypes = {
     children: PropTypes.node,
     location: PropTypes.object.isRequired,
-    match: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired
   }
 
   render() {
