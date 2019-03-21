@@ -1,27 +1,21 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Switch, matchPath } from 'react-router-dom'
+import { Switch, matchPath, withRouter } from 'react-router-dom'
 
 import SwitchFragment from './SwitchFragment'
 import { isNull } from '../helpers/is'
 import { get } from '../helpers/try'
 
-export default class CacheSwitch extends Switch {
-  static contextTypes = {
-    router: PropTypes.shape({
-      route: PropTypes.object.isRequired
-    }).isRequired
-  }
+class CacheSwitch extends Switch {
 
   static propTypes = {
     children: PropTypes.node,
-    location: PropTypes.object
+    location: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired,
   }
 
   render() {
-    const { route } = this.context.router
-    const { children } = this.props
-    const location = this.props.location || route.location
+    const { children, location, match } = this.props
 
     let __matched__already = false
 
@@ -45,7 +39,7 @@ export default class CacheSwitch extends Switch {
             : matchPath(
                 location.pathname,
                 { path, exact, strict, sensitive },
-                route.match
+                match
               )
 
           let child
@@ -90,3 +84,5 @@ export default class CacheSwitch extends Switch {
     )
   }
 }
+
+export default withRouter(CacheSwitch)
