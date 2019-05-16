@@ -522,7 +522,7 @@
 
   CacheRoute.componentName = 'CacheRoute';
   CacheRoute.propTypes = {
-    component: PropTypes.func,
+    component: PropTypes.elementType || PropTypes.any,
     render: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
     className: PropTypes.string,
@@ -649,7 +649,7 @@
   };
 
 
-  var CacheSwitch$1 = reactRouterDom.withRouter(CacheSwitch);
+  var CacheSwitch$1 = isExist(reactRouterDom.__RouterContext) ? reactRouterDom.withRouter(CacheSwitch) : CacheSwitch;
 
   exports.default = CacheRoute;
   exports.CacheRoute = CacheRoute;

@@ -12,7 +12,7 @@ export default class CacheRoute extends Component {
   static componentName = 'CacheRoute'
 
   static propTypes = {
-    component: PropTypes.func,
+    component: PropTypes.elementType || PropTypes.any,
     render: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
     className: PropTypes.string,

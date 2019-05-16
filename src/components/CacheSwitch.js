@@ -1,9 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Switch, matchPath, withRouter } from 'react-router-dom'
+import {
+  Switch,
+  matchPath,
+  withRouter,
+  __RouterContext
+} from 'react-router-dom'
 
 import SwitchFragment from './SwitchFragment'
-import { isNull } from '../helpers/is'
+import { isNull, isExist } from '../helpers/is'
 import { get } from '../helpers/try'
 
 class CacheSwitch extends Switch {
@@ -84,4 +89,6 @@ class CacheSwitch extends Switch {
   }
 }
 
-export default withRouter(CacheSwitch)
+export default (isExist(__RouterContext)
+  ? withRouter(CacheSwitch)
+  : CacheSwitch)
