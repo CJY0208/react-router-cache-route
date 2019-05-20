@@ -11,15 +11,28 @@ import SwitchFragment from './SwitchFragment'
 import { isNull, isExist } from '../helpers/is'
 import { get } from '../helpers/try'
 
+const useNewContext = isExist(__RouterContext)
+
 class CacheSwitch extends Switch {
-  static propTypes = {
-    children: PropTypes.node,
-    location: PropTypes.object.isRequired,
-    match: PropTypes.object.isRequired
+  getContext = () => {
+    if (useNewContext) {
+      const { location, match } = this.props
+
+      return { location, match }
+    } else {
+      const { route } = this.context.router
+      const location = this.props.location || route.location
+
+      return {
+        location: this.props.location || route.location,
+        match: route.match
+      }
+    }
   }
 
   render() {
-    const { children, location, match } = this.props
+    const { children } = this.props
+    const { location, match } = this.getContext()
 
     let __matched__already = false
 
@@ -89,6 +102,25 @@ class CacheSwitch extends Switch {
   }
 }
 
-export default (isExist(__RouterContext)
-  ? withRouter(CacheSwitch)
-  : CacheSwitch)
+if (useNewContext) {
+  CacheSwitch.propTypes = {
+    children: PropTypes.node,
+    location: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired
+  }
+
+  CacheSwitch = withRouter(CacheSwitch)
+} else {
+  CacheSwitch.contextTypes = {
+    router: PropTypes.shape({
+      route: PropTypes.object.isRequired
+    }).isRequired
+  }
+
+  CacheSwitch.propTypes = {
+    children: PropTypes.node,
+    location: PropTypes.object
+  }
+}
+
+export default CacheSwitch
