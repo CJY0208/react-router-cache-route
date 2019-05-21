@@ -9,13 +9,13 @@ import {
 
 import SwitchFragment from './SwitchFragment'
 import { isNull, isExist } from '../helpers/is'
-import { get } from '../helpers/try'
+import { get, value } from '../helpers/try'
 
-const useNewContext = isExist(__RouterContext)
+const isUsingNewContext = isExist(__RouterContext)
 
 class CacheSwitch extends Switch {
   getContext = () => {
-    if (useNewContext) {
+    if (isUsingNewContext) {
       const { location, match } = this.props
 
       return { location, match }
@@ -32,7 +32,7 @@ class CacheSwitch extends Switch {
 
   render() {
     const { children } = this.props
-    const { location, match } = this.getContext()
+    const { location, match: contextMatch } = this.getContext()
 
     let __matched__already = false
 
@@ -43,24 +43,25 @@ class CacheSwitch extends Switch {
             return null
           }
 
-          const {
-            path: pathProp,
-            exact,
-            strict,
-            sensitive,
-            from
-          } = element.props
-          const path = pathProp || from
+          const path = element.props.path || element.props.from
           const match = __matched__already
             ? null
-            : matchPath(
-                location.pathname,
-                { path, exact, strict, sensitive },
-                match
-              )
+            : path
+              ? matchPath(
+                  location.pathname,
+                  {
+                    ...element.props,
+                    path
+                  },
+                  contextMatch
+                )
+              : contextMatch
 
           let child
-          switch (get(element, 'type.componentName')) {
+          switch (value(
+            get(element, 'type.componentName'),
+            get(element, 'type.displayName')
+          )) {
             case 'CacheRoute':
               child = React.cloneElement(element, {
                 location,
@@ -102,7 +103,7 @@ class CacheSwitch extends Switch {
   }
 }
 
-if (useNewContext) {
+if (isUsingNewContext) {
   CacheSwitch.propTypes = {
     children: PropTypes.node,
     location: PropTypes.object.isRequired,

@@ -1,27 +1,15 @@
 import { isString, isExist, isUndefined, isFunction } from '../is'
 
 export const get = (obj, keys = [], defaultValue) => {
-  keys = isString(keys) ? keys.split('.') : keys
-
-  let result
-  let res = obj
-  let idx = 0
-
-  for (; idx < keys.length; idx++) {
-    let key = keys[idx]
-
-    if (isExist(res)) {
-      res = res[key]
-    } else {
-      break
-    }
+  try {
+    let result = (isString(keys) ? keys.split('.') : keys).reduce(
+      (res, key) => res[key],
+      obj
+    )
+    return isUndefined(result) ? defaultValue : result
+  } catch (e) {
+    return defaultValue
   }
-
-  if (idx === keys.length) {
-    result = res
-  }
-
-  return isUndefined(result) ? defaultValue : result
 }
 
 export const run = (obj, keys = [], ...args) => {

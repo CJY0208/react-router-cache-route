@@ -33,27 +33,14 @@
     var keys = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
     var defaultValue = arguments[2];
 
-    keys = isString(keys) ? keys.split('.') : keys;
-
-    var result = void 0;
-    var res = obj;
-    var idx = 0;
-
-    for (; idx < keys.length; idx++) {
-      var key = keys[idx];
-
-      if (isExist(res)) {
-        res = res[key];
-      } else {
-        break;
-      }
+    try {
+      var result = (isString(keys) ? keys.split('.') : keys).reduce(function (res, key) {
+        return res[key];
+      }, obj);
+      return isUndefined(result) ? defaultValue : result;
+    } catch (e) {
+      return defaultValue;
     }
-
-    if (idx === keys.length) {
-      result = res;
-    }
-
-    return isUndefined(result) ? defaultValue : result;
   };
 
   var run = function run(obj) {
@@ -566,7 +553,7 @@
   var SwitchFragment = getFragment();
   SwitchFragment.displayName = 'SwitchFragment';
 
-  var useNewContext = isExist(reactRouterDom.__RouterContext);
+  var isUsingNewContext = isExist(reactRouterDom.__RouterContext);
 
   var CacheSwitch = function (_Switch) {
     inherits(CacheSwitch, _Switch);
@@ -583,7 +570,7 @@
       }
 
       return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = CacheSwitch.__proto__ || Object.getPrototypeOf(CacheSwitch)).call.apply(_ref, [this].concat(args))), _this), _this.getContext = function () {
-        if (useNewContext) {
+        if (isUsingNewContext) {
           var _this$props = _this.props,
               location = _this$props.location,
               match = _this$props.match;
@@ -610,7 +597,7 @@
 
         var _getContext = this.getContext(),
             location = _getContext.location,
-            match = _getContext.match;
+            contextMatch = _getContext.match;
 
         var __matched__already = false;
 
@@ -622,18 +609,13 @@
               return null;
             }
 
-            var _element$props = element.props,
-                pathProp = _element$props.path,
-                exact = _element$props.exact,
-                strict = _element$props.strict,
-                sensitive = _element$props.sensitive,
-                from = _element$props.from;
-
-            var path = pathProp || from;
-            var match = __matched__already ? null : reactRouterDom.matchPath(location.pathname, { path: path, exact: exact, strict: strict, sensitive: sensitive }, match);
+            var path = element.props.path || element.props.from;
+            var match = __matched__already ? null : path ? reactRouterDom.matchPath(location.pathname, _extends({}, element.props, {
+              path: path
+            }), contextMatch) : contextMatch;
 
             var child = void 0;
-            switch (get(element, 'type.componentName')) {
+            switch (value(get(element, 'type.componentName'), get(element, 'type.displayName'))) {
               case 'CacheRoute':
                 child = React__default.cloneElement(element, {
                   location: location,
@@ -671,7 +653,7 @@
     return CacheSwitch;
   }(reactRouterDom.Switch);
 
-  if (useNewContext) {
+  if (isUsingNewContext) {
     CacheSwitch.propTypes = {
       children: PropTypes.node,
       location: PropTypes.object.isRequired,
