@@ -27,6 +27,14 @@
   var isExist = function isExist(val) {
     return !(isUndefined(val) || isNull(val));
   };
+
+  var isNaN = function isNaN(val) {
+    return val !== val;
+  };
+
+  var isNumber = function isNumber(val) {
+    return typeof val === 'number' && !isNaN(val);
+  };
   // 值类型判断 -------------------------------------------------------------
 
   var get = function get(obj) {
@@ -34,6 +42,9 @@
     var defaultValue = arguments[2];
 
     try {
+      if (isNumber(keys)) {
+        keys = String(keys);
+      }
       var result = (isString(keys) ? keys.split('.') : keys).reduce(function (res, key) {
         return res[key];
       }, obj);
@@ -601,53 +612,58 @@
 
         var __matched__already = false;
 
-        return React__default.createElement(
-          SwitchFragment,
-          null,
-          React__default.Children.map(children, function (element) {
-            if (!React__default.isValidElement(element)) {
-              return null;
-            }
+        return React__default.createElement(Updatable, {
+          match: contextMatch,
+          render: function render() {
+            return React__default.createElement(
+              SwitchFragment,
+              null,
+              React__default.Children.map(children, function (element) {
+                if (!React__default.isValidElement(element)) {
+                  return null;
+                }
 
-            var path = element.props.path || element.props.from;
-            var match = __matched__already ? null : path ? reactRouterDom.matchPath(location.pathname, _extends({}, element.props, {
-              path: path
-            }), contextMatch) : contextMatch;
+                var path = element.props.path || element.props.from;
+                var match = __matched__already ? null : path ? reactRouterDom.matchPath(location.pathname, _extends({}, element.props, {
+                  path: path
+                }), contextMatch) : contextMatch;
 
-            var child = void 0;
-            switch (value(get(element, 'type.componentName'), get(element, 'type.displayName'))) {
-              case 'CacheRoute':
-                child = React__default.cloneElement(element, {
-                  location: location,
-                  /**
-                   * https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L57
-                   *
-                   * Note:
-                   * Route would use computedMatch as its next match state ONLY when computedMatch is a true value
-                   * So here we have to do some trick to let the unmatch result pass Route's computedMatch check
-                   *
-                   * 注意：只有当 computedMatch 为真值时，Route 才会使用 computedMatch 作为其下一个匹配状态
-                   * 所以这里我们必须做一些手脚，让 unmatch 结果通过 Route 的 computedMatch 检查
-                   */
-                  computedMatch: isNull(match) ? {
-                    __CacheRoute__computedMatch__null: true
-                  } : match
-                });
-                break;
-              default:
-                child = match && !__matched__already ? React__default.cloneElement(element, {
-                  location: location,
-                  computedMatch: match
-                }) : null;
-            }
+                var child = void 0;
+                switch (value(get(element, 'type.componentName'), get(element, 'type.displayName'))) {
+                  case 'CacheRoute':
+                    child = React__default.cloneElement(element, {
+                      location: location,
+                      /**
+                       * https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L57
+                       *
+                       * Note:
+                       * Route would use computedMatch as its next match state ONLY when computedMatch is a true value
+                       * So here we have to do some trick to let the unmatch result pass Route's computedMatch check
+                       *
+                       * 注意：只有当 computedMatch 为真值时，Route 才会使用 computedMatch 作为其下一个匹配状态
+                       * 所以这里我们必须做一些手脚，让 unmatch 结果通过 Route 的 computedMatch 检查
+                       */
+                      computedMatch: isNull(match) ? {
+                        __CacheRoute__computedMatch__null: true
+                      } : match
+                    });
+                    break;
+                  default:
+                    child = match && !__matched__already ? React__default.cloneElement(element, {
+                      location: location,
+                      computedMatch: match
+                    }) : null;
+                }
 
-            if (!__matched__already) {
-              __matched__already = !!match;
-            }
+                if (!__matched__already) {
+                  __matched__already = !!match;
+                }
 
-            return child;
-          })
-        );
+                return child;
+              })
+            );
+          }
+        });
       }
     }]);
     return CacheSwitch;

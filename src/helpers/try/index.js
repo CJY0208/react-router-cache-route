@@ -1,7 +1,10 @@
-import { isString, isExist, isUndefined, isFunction } from '../is'
+import { isString, isExist, isUndefined, isFunction, isNumber } from '../is'
 
 export const get = (obj, keys = [], defaultValue) => {
   try {
+    if (isNumber(keys)) {
+      keys = String(keys)
+    }
     let result = (isString(keys) ? keys.split('.') : keys).reduce(
       (res, key) => res[key],
       obj
