@@ -1,22 +1,27 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
+import { isExist, isFunction } from '../helpers/is'
 import { run, get, value } from '../helpers/try'
 import { register } from './manager'
 
-const __new__lifecycles =
+const __isUsingNewLifecycle =
   Number(get(run(React, 'version.match', /^\d*\.\d*/), [0])) >= 16.3
+
+export const COMPUTED_UNMATCH_KEY = '__isComputedUnmatch'
+export const isMatch = match =>
+  isExist(match) && get(match, COMPUTED_UNMATCH_KEY) !== true
 
 const getDerivedStateFromProps = (nextProps, prevState) => {
   let { match: nextPropsMatch, when = 'forward' } = nextProps
 
   /**
    * Note:
-   * Turn computedMatch from CacheSwitch to a real null value if necessary
+   * Turn computedMatch from CacheSwitch to a real null value
    *
-   * 必要时将 CacheSwitch 计算得到的 computedMatch 值转换为真正的 null
+   * 将 CacheSwitch 计算得到的 computedMatch 值转换为真正的 null
    */
-  if (get(nextPropsMatch, '__CacheRoute__computedMatch__null')) {
+  if (!isMatch(nextPropsMatch)) {
     nextPropsMatch = null
   }
 
@@ -37,20 +42,24 @@ const getDerivedStateFromProps = (nextProps, prevState) => {
 
     let __cancel__cache = false
 
-    switch (when) {
-      case 'always':
-        break
-      case 'back':
-        if (['PUSH', 'REPLACE'].includes(nextAction)) {
-          __cancel__cache = true
-        }
+    if (isFunction(when)) {
+      __cancel__cache = !when(nextProps)
+    } else {
+      switch (when) {
+        case 'always':
+          break
+        case 'back':
+          if (['PUSH', 'REPLACE'].includes(nextAction)) {
+            __cancel__cache = true
+          }
 
-        break
-      case 'forward':
-      default:
-        if (nextAction === 'POP') {
-          __cancel__cache = true
-        }
+          break
+        case 'forward':
+        default:
+          if (nextAction === 'POP') {
+            __cancel__cache = true
+          }
+      }
     }
 
     if (__cancel__cache) {
@@ -72,12 +81,17 @@ export default class CacheComponent extends Component {
     match: PropTypes.object.isRequired,
     children: PropTypes.func.isRequired,
     className: PropTypes.string,
-    when: PropTypes.oneOf(['forward', 'back', 'always']),
-    behavior: PropTypes.func
+    when: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.oneOf(['forward', 'back', 'always'])
+    ]),
+    behavior: PropTypes.func,
+    unmount: PropTypes.bool
   }
 
   static defaultProps = {
     when: 'forward',
+    unmount: false,
     behavior: cached =>
       cached
         ? {
@@ -88,22 +102,6 @@ export default class CacheComponent extends Component {
         : undefined
   }
 
-  render() {
-    const { className: behavior__className = '', ...behaviorProps } = value(
-      this.props.behavior(!this.state.matched),
-      {}
-    )
-    const { className: props__className = '' } = this.props
-    const className = run(`${props__className} ${behavior__className}`, 'trim')
-    const hasClassName = className !== ''
-
-    return this.state.cached ? (
-      <div className={hasClassName ? className : undefined} {...behaviorProps}>
-        {run(this.props, 'children', this.cacheLifecycles)}
-      </div>
-    ) : null
-  }
-
   constructor(props, ...args) {
     super(props, ...args)
 
@@ -111,52 +109,18 @@ export default class CacheComponent extends Component {
       register(props.cacheKey, this)
     }
 
+    if (typeof document !== 'undefined') {
+      this.__placeholderNode = document.createComment(
+        ` Route cached ${
+          props.cacheKey ? `with cacheKey: "${props.cacheKey}" ` : ''
+        }`
+      )
+    }
+
     this.state = getDerivedStateFromProps(props, {
       cached: false,
       matched: false
     })
-  }
-
-  /**
-   * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
-   * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
-   */
-  static getDerivedStateFromProps = __new__lifecycles
-    ? getDerivedStateFromProps
-    : undefined
-
-  /**
-   * Compatible React 16.3 -
-   * 兼容 React 16.3 - 版本
-   */
-  componentWillReceiveProps = !__new__lifecycles
-    ? nextProps => {
-        const nextState = this.setState(
-          getDerivedStateFromProps(nextProps, this.state)
-        )
-      }
-    : undefined
-
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevState.cached || !this.state.cached) {
-      return
-    }
-
-    if (prevState.matched === true && this.state.matched === false) {
-      return run(this, 'cacheLifecycles.__listener.didCache')
-    }
-
-    if (prevState.matched === false && this.state.matched === true) {
-      return run(this, 'cacheLifecycles.__listener.didRecover')
-    }
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return (
-      this.state.matched ||
-      nextState.matched ||
-      this.state.cached !== nextState.cached
-    )
   }
 
   cacheLifecycles = {
@@ -167,5 +131,99 @@ export default class CacheComponent extends Component {
     didRecover: listener => {
       this.cacheLifecycles.__listener['didRecover'] = listener
     }
+  }
+
+  /**
+   * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
+   * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
+   */
+  static getDerivedStateFromProps = __isUsingNewLifecycle
+    ? getDerivedStateFromProps
+    : undefined
+
+  /**
+   * Compatible React 16.3 -
+   * 兼容 React 16.3 - 版本
+   */
+  componentWillReceiveProps = !__isUsingNewLifecycle
+    ? nextProps => {
+        const nextState = getDerivedStateFromProps(nextProps, this.state)
+
+        this.setState(nextState)
+      }
+    : undefined
+
+  __parentNode
+  __placeholderNode
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.cached || !this.state.cached) {
+      return
+    }
+
+    if (prevState.matched === true && this.state.matched === false) {
+      if (this.props.unmount) {
+        const parentNode = get(this.wrapper, 'parentNode')
+        this.__parentNode = parentNode
+
+        run(
+          this.__parentNode,
+          'insertBefore',
+          this.__placeholderNode,
+          this.wrapper
+        )
+        run(this.__parentNode, 'removeChild', this.wrapper)
+      }
+      return run(this, 'cacheLifecycles.__listener.didCache')
+    }
+
+    if (prevState.matched === false && this.state.matched === true) {
+      return run(this, 'cacheLifecycles.__listener.didRecover')
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props.unmount) {
+      const willRecover =
+        this.state.matched === false && nextState.matched === true
+
+      if (willRecover) {
+        run(
+          this.__parentNode,
+          'insertBefore',
+          this.wrapper,
+          this.__placeholderNode
+        )
+        run(this.__parentNode, 'removeChild', this.__placeholderNode)
+      }
+    }
+
+    return (
+      this.state.matched ||
+      nextState.matched ||
+      this.state.cached !== nextState.cached
+    )
+  }
+
+  render() {
+    const { matched, cached } = this.state
+    const { className: propsClassName = '', behavior, children } = this.props
+    const { className: behaviorClassName = '', ...behaviorProps } = value(
+      run(behavior, undefined, !matched),
+      {}
+    )
+    const className = run(`${propsClassName} ${behaviorClassName}`, 'trim')
+    const hasClassName = className !== ''
+
+    return cached ? (
+      <div
+        className={hasClassName ? className : undefined}
+        {...behaviorProps}
+        ref={wrapper => {
+          this.wrapper = wrapper
+        }}
+      >
+        {run(children, undefined, this.cacheLifecycles)}
+      </div>
+    ) : null
   }
 }

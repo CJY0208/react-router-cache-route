@@ -1,21 +1,13 @@
 import { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { get } from '../helpers/try'
-import { isExist } from '../helpers/is'
+import { run, get } from '../helpers/try'
 
 export default class Updatable extends Component {
   static propsTypes = {
-    render: PropTypes.func.isRequired,
-    match: PropTypes.object.isRequired
+    when: PropTypes.bool.isRequired
   }
 
-  render = () => this.props.render()
-
-  shouldComponentUpdate(nextProps) {
-    return (
-      isExist(nextProps.match) &&
-      get(nextProps, 'match.__CacheRoute__computedMatch__null') !== true
-    )
-  }
+  render = () => run(this.props, 'children')
+  shouldComponentUpdate = ({ when }) => when
 }

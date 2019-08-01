@@ -103,6 +103,21 @@
     };
   }();
 
+  var defineProperty = function (obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  };
+
   var _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
@@ -193,47 +208,49 @@
 
   var __components = {};
 
-  var register = function register(key, route) {
-    __components[key] = route;
+  var getCachedComponentEntries = function getCachedComponentEntries() {
+    return Object.entries(__components).filter(function (_ref) {
+      var _ref2 = slicedToArray(_ref, 2),
+          component = _ref2[1];
+
+      return component.state.cached;
+    });
+  };
+
+  var register = function register(key, component) {
+    __components[key] = component;
   };
 
   var dropByCacheKey = function dropByCacheKey(key) {
-    run(__components, [key, 'setState'], {
+    return run(__components, [key, 'setState'], {
       cached: false
     });
   };
 
   var clearCache = function clearCache() {
-    Object.entries(__components).filter(function (_ref) {
-      var _ref2 = slicedToArray(_ref, 2),
-          component = _ref2[1];
-
-      return component.state.cached;
-    }).forEach(function (_ref3) {
+    getCachedComponentEntries().forEach(function (_ref3) {
       var _ref4 = slicedToArray(_ref3, 1),
           key = _ref4[0];
 
-      return run(__components, [key, 'setState'], {
-        cached: false
-      });
+      return dropByCacheKey(key);
     });
   };
 
   var getCachingKeys = function getCachingKeys() {
-    return Object.entries(__components).filter(function (_ref5) {
-      var _ref6 = slicedToArray(_ref5, 2),
-          component = _ref6[1];
-
-      return component.state.cached;
-    }).map(function (_ref7) {
-      var _ref8 = slicedToArray(_ref7, 1),
-          key = _ref8[0];
+    return getCachedComponentEntries().map(function (_ref5) {
+      var _ref6 = slicedToArray(_ref5, 1),
+          key = _ref6[0];
 
       return key;
     });
   };
 
-  var __new__lifecycles = Number(get(run(React__default, 'version.match', /^\d*\.\d*/), [0])) >= 16.3;
+  var __isUsingNewLifecycle = Number(get(run(React__default, 'version.match', /^\d*\.\d*/), [0])) >= 16.3;
+
+  var COMPUTED_UNMATCH_KEY = '__isComputedUnmatch';
+  var isMatch = function isMatch(match) {
+    return isExist(match) && get(match, COMPUTED_UNMATCH_KEY) !== true;
+  };
 
   var getDerivedStateFromProps = function getDerivedStateFromProps(nextProps, prevState) {
     var nextPropsMatch = nextProps.match,
@@ -242,12 +259,12 @@
 
     /**
      * Note:
-     * Turn computedMatch from CacheSwitch to a real null value if necessary
+     * Turn computedMatch from CacheSwitch to a real null value
      *
-     * 必要时将 CacheSwitch 计算得到的 computedMatch 值转换为真正的 null
+     * 将 CacheSwitch 计算得到的 computedMatch 值转换为真正的 null
      */
 
-    if (get(nextPropsMatch, '__CacheRoute__computedMatch__null')) {
+    if (!isMatch(nextPropsMatch)) {
       nextPropsMatch = null;
     }
 
@@ -268,20 +285,24 @@
 
       var __cancel__cache = false;
 
-      switch (when) {
-        case 'always':
-          break;
-        case 'back':
-          if (['PUSH', 'REPLACE'].includes(nextAction)) {
-            __cancel__cache = true;
-          }
+      if (isFunction(when)) {
+        __cancel__cache = !when(nextProps);
+      } else {
+        switch (when) {
+          case 'always':
+            break;
+          case 'back':
+            if (['PUSH', 'REPLACE'].includes(nextAction)) {
+              __cancel__cache = true;
+            }
 
-          break;
-        case 'forward':
-        default:
-          if (nextAction === 'POP') {
-            __cancel__cache = true;
-          }
+            break;
+          case 'forward':
+          default:
+            if (nextAction === 'POP') {
+              __cancel__cache = true;
+            }
+        }
       }
 
       if (__cancel__cache) {
@@ -299,27 +320,6 @@
 
   var CacheComponent = function (_Component) {
     inherits(CacheComponent, _Component);
-    createClass(CacheComponent, [{
-      key: 'render',
-      value: function render() {
-        var _value = value(this.props.behavior(!this.state.matched), {}),
-            _value$className = _value.className,
-            behavior__className = _value$className === undefined ? '' : _value$className,
-            behaviorProps = objectWithoutProperties(_value, ['className']);
-
-        var _props$className = this.props.className,
-            props__className = _props$className === undefined ? '' : _props$className;
-
-        var className = run(props__className + ' ' + behavior__className, 'trim');
-        var hasClassName = className !== '';
-
-        return this.state.cached ? React__default.createElement(
-          'div',
-          _extends({ className: hasClassName ? className : undefined }, behaviorProps),
-          run(this.props, 'children', this.cacheLifecycles)
-        ) : null;
-      }
-    }]);
 
     function CacheComponent(props) {
       var _ref;
@@ -332,9 +332,6 @@
 
       var _this = possibleConstructorReturn(this, (_ref = CacheComponent.__proto__ || Object.getPrototypeOf(CacheComponent)).call.apply(_ref, [this, props].concat(args)));
 
-      _this.componentWillReceiveProps = !__new__lifecycles ? function (nextProps) {
-        var nextState = _this.setState(getDerivedStateFromProps(nextProps, _this.state));
-      } : undefined;
       _this.cacheLifecycles = {
         __listener: {},
         didCache: function didCache(listener) {
@@ -343,11 +340,25 @@
         didRecover: function didRecover(listener) {
           _this.cacheLifecycles.__listener['didRecover'] = listener;
         }
+
+        /**
+         * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
+         * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
+         */
       };
+      _this.componentWillReceiveProps = !__isUsingNewLifecycle ? function (nextProps) {
+        var nextState = getDerivedStateFromProps(nextProps, _this.state);
+
+        _this.setState(nextState);
+      } : undefined;
 
 
       if (props.cacheKey) {
         register(props.cacheKey, _this);
+      }
+
+      if (typeof document !== 'undefined') {
+        _this.__placeholderNode = document.createComment(' Route cached ' + (props.cacheKey ? 'with cacheKey: "' + props.cacheKey + '" ' : ''));
       }
 
       _this.state = getDerivedStateFromProps(props, {
@@ -356,12 +367,6 @@
       });
       return _this;
     }
-
-    /**
-     * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
-     * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
-     */
-
 
     /**
      * Compatible React 16.3 -
@@ -377,6 +382,13 @@
         }
 
         if (prevState.matched === true && this.state.matched === false) {
+          if (this.props.unmount) {
+            var parentNode = get(this.wrapper, 'parentNode');
+            this.__parentNode = parentNode;
+
+            run(this.__parentNode, 'insertBefore', this.__placeholderNode, this.wrapper);
+            run(this.__parentNode, 'removeChild', this.wrapper);
+          }
           return run(this, 'cacheLifecycles.__listener.didCache');
         }
 
@@ -387,7 +399,50 @@
     }, {
       key: 'shouldComponentUpdate',
       value: function shouldComponentUpdate(nextProps, nextState) {
+        if (this.props.unmount) {
+          var willRecover = this.state.matched === false && nextState.matched === true;
+
+          if (willRecover) {
+            run(this.__parentNode, 'insertBefore', this.wrapper, this.__placeholderNode);
+            run(this.__parentNode, 'removeChild', this.__placeholderNode);
+          }
+        }
+
         return this.state.matched || nextState.matched || this.state.cached !== nextState.cached;
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var _this2 = this;
+
+        var _state = this.state,
+            matched = _state.matched,
+            cached = _state.cached;
+        var _props = this.props,
+            _props$className = _props.className,
+            propsClassName = _props$className === undefined ? '' : _props$className,
+            behavior = _props.behavior,
+            children = _props.children;
+
+        var _value = value(run(behavior, undefined, !matched), {}),
+            _value$className = _value.className,
+            behaviorClassName = _value$className === undefined ? '' : _value$className,
+            behaviorProps = objectWithoutProperties(_value, ['className']);
+
+        var className = run(propsClassName + ' ' + behaviorClassName, 'trim');
+        var hasClassName = className !== '';
+
+        return cached ? React__default.createElement(
+          'div',
+          _extends({
+            className: hasClassName ? className : undefined
+          }, behaviorProps, {
+            ref: function ref(wrapper) {
+              _this2.wrapper = wrapper;
+            }
+          }),
+          run(children, undefined, this.cacheLifecycles)
+        ) : null;
       }
     }]);
     return CacheComponent;
@@ -398,11 +453,13 @@
     match: PropTypes.object.isRequired,
     children: PropTypes.func.isRequired,
     className: PropTypes.string,
-    when: PropTypes.oneOf(['forward', 'back', 'always']),
-    behavior: PropTypes.func
+    when: PropTypes.oneOfType([PropTypes.func, PropTypes.oneOf(['forward', 'back', 'always'])]),
+    behavior: PropTypes.func,
+    unmount: PropTypes.bool
   };
   CacheComponent.defaultProps = {
     when: 'forward',
+    unmount: false,
     behavior: function behavior(cached) {
       return cached ? {
         style: {
@@ -411,7 +468,7 @@
       } : undefined;
     }
   };
-  CacheComponent.getDerivedStateFromProps = __new__lifecycles ? getDerivedStateFromProps : undefined;
+  CacheComponent.getDerivedStateFromProps = __isUsingNewLifecycle ? getDerivedStateFromProps : undefined;
 
   var Updatable = function (_Component) {
     inherits(Updatable, _Component);
@@ -428,22 +485,18 @@
       }
 
       return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = Updatable.__proto__ || Object.getPrototypeOf(Updatable)).call.apply(_ref, [this].concat(args))), _this), _this.render = function () {
-        return _this.props.render();
+        return run(_this.props, 'children');
+      }, _this.shouldComponentUpdate = function (_ref2) {
+        var when = _ref2.when;
+        return when;
       }, _temp), possibleConstructorReturn(_this, _ret);
     }
 
-    createClass(Updatable, [{
-      key: 'shouldComponentUpdate',
-      value: function shouldComponentUpdate(nextProps) {
-        return isExist(nextProps.match) && get(nextProps, 'match.__CacheRoute__computedMatch__null') !== true;
-      }
-    }]);
     return Updatable;
   }(React.Component);
 
   Updatable.propsTypes = {
-    render: PropTypes.func.isRequired,
-    match: PropTypes.object.isRequired
+    when: PropTypes.bool.isRequired
   };
 
   var isEmptyChildren = function isEmptyChildren(children) {
@@ -462,14 +515,15 @@
       key: 'render',
       value: function render() {
         var _props = this.props,
-            _children = _props.children,
-            _render = _props.render,
+            children = _props.children,
+            render = _props.render,
             component = _props.component,
             className = _props.className,
             when = _props.when,
             behavior = _props.behavior,
             cacheKey = _props.cacheKey,
-            __rest__props = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey']);
+            unmount = _props.unmount,
+            __restProps = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey', 'unmount']);
 
         /**
          * Note:
@@ -479,9 +533,9 @@
          */
 
 
-        if (React__default.isValidElement(_children) || !isEmptyChildren(_children)) {
-          _render = function render() {
-            return _children;
+        if (React__default.isValidElement(children) || !isEmptyChildren(children)) {
+          render = function render() {
+            return children;
           };
         }
 
@@ -490,28 +544,31 @@
            * Only children prop of Route can help to control rendering behavior
            * 只有 Router 的 children 属性有助于主动控制渲染行为
            */
-          React__default.createElement(reactRouterDom.Route, _extends({}, __rest__props, {
-            children: function children(props) {
+          React__default.createElement(
+            reactRouterDom.Route,
+            __restProps,
+            function (props) {
               return React__default.createElement(
                 CacheComponent,
-                _extends({}, props, { when: when, className: className, behavior: behavior, cacheKey: cacheKey }),
+                _extends({}, props, { when: when, className: className, behavior: behavior, cacheKey: cacheKey, unmount: unmount }),
                 function (cacheLifecycles) {
-                  return React__default.createElement(Updatable, {
-                    match: props.match,
-                    render: function render() {
+                  return React__default.createElement(
+                    Updatable,
+                    { when: isMatch(props.match) },
+                    function () {
                       Object.assign(props, { cacheLifecycles: cacheLifecycles });
 
                       if (component) {
                         return React__default.createElement(component, props);
                       }
 
-                      return run(_render || _children, undefined, props);
+                      return run(render || children, undefined, props);
                     }
-                  });
+                  );
                 }
               );
             }
-          }))
+          )
         );
       }
     }]);
@@ -522,43 +579,36 @@
   CacheRoute.propTypes = {
     component: PropTypes.elementType || PropTypes.any,
     render: PropTypes.func,
-    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
-    className: PropTypes.string,
-    when: PropTypes.oneOf(['forward', 'back', 'always']),
-    behavior: PropTypes.func
-  };
-  CacheRoute.defaultProps = {
-    when: 'forward'
+    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node])
   };
 
   function getFragment() {
-    switch (true) {
-      case isExist(React.PropTypes):
-        return function (_ref) {
-          var children = _ref.children;
-          return React__default.createElement(
-            'div',
-            null,
-            children
-          );
-        };
-
-      case isExist(React.Fragment):
-        return function (_ref2) {
-          var children = _ref2.children;
-          return React__default.createElement(
-            React.Fragment,
-            null,
-            children
-          );
-        };
-
-      default:
-        return function (_ref3) {
-          var children = _ref3.children;
-          return children;
-        };
+    if (isExist(React.Fragment)) {
+      return function (_ref) {
+        var children = _ref.children;
+        return React__default.createElement(
+          React.Fragment,
+          null,
+          children
+        );
+      };
     }
+
+    if (isExist(React.PropTypes)) {
+      return function (_ref2) {
+        var children = _ref2.children;
+        return React__default.createElement(
+          'div',
+          null,
+          children
+        );
+      };
+    }
+
+    return function (_ref3) {
+      var children = _ref3.children;
+      return children;
+    };
   }
 
   var SwitchFragment = getFragment();
@@ -610,11 +660,12 @@
             location = _getContext.location,
             contextMatch = _getContext.match;
 
-        var __matched__already = false;
+        var __matchedAlready = false;
 
-        return React__default.createElement(Updatable, {
-          match: contextMatch,
-          render: function render() {
+        return React__default.createElement(
+          Updatable,
+          { when: isMatch(contextMatch) },
+          function () {
             return React__default.createElement(
               SwitchFragment,
               null,
@@ -624,7 +675,7 @@
                 }
 
                 var path = element.props.path || element.props.from;
-                var match = __matched__already ? null : path ? reactRouterDom.matchPath(location.pathname, _extends({}, element.props, {
+                var match = __matchedAlready ? null : path ? reactRouterDom.matchPath(location.pathname, _extends({}, element.props, {
                   path: path
                 }), contextMatch) : contextMatch;
 
@@ -643,27 +694,25 @@
                        * 注意：只有当 computedMatch 为真值时，Route 才会使用 computedMatch 作为其下一个匹配状态
                        * 所以这里我们必须做一些手脚，让 unmatch 结果通过 Route 的 computedMatch 检查
                        */
-                      computedMatch: isNull(match) ? {
-                        __CacheRoute__computedMatch__null: true
-                      } : match
+                      computedMatch: isNull(match) ? defineProperty({}, COMPUTED_UNMATCH_KEY, true) : match
                     });
                     break;
                   default:
-                    child = match && !__matched__already ? React__default.cloneElement(element, {
+                    child = match && !__matchedAlready ? React__default.cloneElement(element, {
                       location: location,
                       computedMatch: match
                     }) : null;
                 }
 
-                if (!__matched__already) {
-                  __matched__already = !!match;
+                if (!__matchedAlready) {
+                  __matchedAlready = !!match;
                 }
 
                 return child;
               })
             );
           }
-        });
+        );
       }
     }]);
     return CacheSwitch;

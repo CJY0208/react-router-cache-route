@@ -6,98 +6,62 @@
 
 **React-Router v4+**
 
+---
+
+<img src="./docs/CacheRoute.gif">
+
+- - -
+
 ## 遇到的问题
 
 使用 `Route` 时，路由对应的组件在前进或后退无法被缓存，导致了 **数据和行为的丢失**
 
 例如：列表页滚动到底部后，点击跳转到详情页，返回后会回到列表页顶部，丢失了滚动位置和数据的记录
 
+---
+
 ## 原因 & 解决方案
 
-`Route` 中配置的组件在路径不匹配时会被卸载（render 方法中 return null），对应的真实节点也将从 dom 树中删除
+`Route` 中配置的组件在路径不匹配时会被卸载，对应的真实节点也将从 dom 树中删除
 
 在阅读了 `Route` 的源码后我们发现可以将 `children` 当作方法来使用，以帮助我们手动控制渲染的行为
 
 **隐藏替代删除** 可以解决遇到的问题
 
-https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L42-L63
+https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L41-L63
+
+---
 
 ## 安装
 
 ```bash
 npm install react-router-cache-route --save
+# or
+yarn add react-router-cache-route
 ```
+
+---
 
 ## 使用方法
 
-可以使用 `CacheRoute` 组件的 `component`， `render`， `children` 属性装载组件
+使用 `CacheRoute` 替换 `Route`
 
-注意：缓存语句不要写在 `Switch` 组件当中，因为 `Switch` 组件会卸载掉所有非匹配状态下的路由，需使用 `CacheSwitch` 替代 `Switch`
-
-使用 `when` 属性决定何时使用缓存功能，可选值为 [`forward`, `back`, `always`] ，默认值为 `forward`
-
-使用 `className` 属性给包裹组件添加自定义样式
-
-也可以使用 `behavior` 属性来自定义缓存状态下组件的隐藏方式，工作方式是根据 `CacheRoute` 当前的缓存状态，返回一个作用于包裹组件的 `props`
+使用 `CacheSwitch` 替换 `Switch`（因为 `Switch` 组件只保留第一个匹配状态的路由，卸载掉其他路由）
 
 ```javascript
 import React from 'react'
-import { HashRouter as Router, Switch, Route } from 'react-router-dom'
+import { HashRouter as Router, Route } from 'react-router-dom'
 import CacheRoute, { CacheSwitch } from 'react-router-cache-route'
 
-import List from './components/List'
-import Item from './components/Item'
-
-import List2 from './components/List2'
-import Item2 from './components/Item2'
+import List from './views/List'
+import Item from './views/Item'
 
 const App = () => (
   <Router>
-    {/*
-      也可使用 render, children prop
-      <CacheRoute exact path="/list" render={props => <List {...props} />} />
-      或
-      <CacheRoute exact path="/list">
-        {props => <List {...props} />}
-      </CacheRoute>
-      或
-      <CacheRoute exact path="/list">
-        <div>
-          支持多个子组件
-        </div>
-        <List />
-      </CacheRoute>
-    */}
-    <CacheRoute exact path="/list" component={List} when="always" /> 
-    <Switch>
-      <Route exact path="/item/:id" component={Item} />
-    </Switch>
-
     <CacheSwitch>
-      <CacheRoute 
-        exact 
-        path="/list2" 
-        component={List2} 
-        className="custom-style"
-        behavior={cached => (cached ? {
-          style: {
-            position: 'absolute',
-            zIndex: -9999,
-            opacity: 0,
-            visibility: 'hidden',
-            pointerEvents: 'none'
-          },
-          className: '__CacheRoute__wrapper__cached'
-        } : {
-          className: '__CacheRoute__wrapper__uncached'
-        })}
-      />
-      <Route exact path="/item2/:id" component={Item2} />
-      <Route
-        render={() => (
-          <div>404 未找到页面</div>
-        )}
-      />
+      <CacheRoute exact path="/list" component={List} />
+      <Route exact path="/item/:id" component={Item} />
+      <Route render={() => <div>404 未找到页面</div>} />
     </CacheSwitch>
   </Router>
 )
@@ -105,21 +69,51 @@ const App = () => (
 export default App
 ```
 
+---
+
+## CacheRoute 属性说明
+
+| 名称      | 类型                  | 默认值                                                         | 描述                                                              |
+| --------- | --------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| when      | `String` / `Function` | `"forward"`                                                    | 用以决定何时使用缓存功能                                          |
+| className | `String`              | -                                                              | 作用于包裹容器上的样式类名                                        |
+| behavior  | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | 返回一个作用于包裹容器的 `props`，控制包裹容器的渲染方式          |
+| cacheKey  | `String`              | -                                                              | 增加此属性用于命令式控制缓存                                      |
+| unmount   | `Boolean`             | `false`                                                        | 缓存时是否卸载 dom 节点，用于节约性能（将导致恢复时滚动位置丢失） |
+
+`CacheRoute` 仅是基于 `Route` 的 `children` 属性工作的一个封装组件，不影响 `Route` 本身属性的功能
+
+其余属性请参考 https://reacttraining.com/react-router/
+
+---
+
+### `when` 取值说明
+
+类型为 `String` 时可取以下值：
+
+- **[forward]** 发生**前进**行为时缓存，对应 react-router 中的 `PUSH` 或 `REPLACE` 事件
+- **[back]** 发生**后退**行为时缓存，对应 react-router 中的 `POP` 事件
+- **[always]** 离开时一律缓存路由，无论前进或者后退
+
+类型为 `Function` 时，将接受组件的 `props` 作为第一参数，返回 `true/false` 决定是否缓存
+
+---
+
 ## 额外的生命周期
 
-使用 `CacheRoute` 的组件将会得到一个名为 `cacheLifecycles` 的属性，里面包含两个额外生命周期的注入函数 `didCache` 和 `didRecover`，分别用在组件 **被缓存** 和 **被恢复** 时
+使用 `CacheRoute` 的组件将会得到一个名为 `cacheLifecycles` 的属性，里面包含两个额外生命周期的注入函数 `didCache` 和 `didRecover`，分别在组件 **被缓存** 和 **被恢复** 时触发
 
 ```javascript
 import React, { Component } from 'react'
 
 export default class List extends Component {
-  constructor(props, ...args) {
-    super(props, ...args)
+  constructor(props) {
+    super(props)
 
     props.cacheLifecycles.didCache(this.componentDidCache)
     props.cacheLifecycles.didRecover(this.componentDidRecover)
   }
-  
+
   componentDidCache = () => {
     console.log('List cached')
   }
@@ -130,16 +124,17 @@ export default class List extends Component {
 
   render() {
     return (
-      // ...
+      ...
     )
   }
 }
-
 ```
+
+---
 
 ## 手动清除缓存
 
-使用 `cacheKey` prop 和 `dropByCacheKey` 函数来手动控制缓存
+使用 `cacheKey` 和 `dropByCacheKey` 函数来手动控制缓存
 
 ```javascript
 import CacheRoute, { dropByCacheKey, getCachingKeys } from 'react-router-cache-route'

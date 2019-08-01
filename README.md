@@ -8,102 +8,96 @@ Route with cache for `react-router` like `keep-alive` in Vue.
 
 **React-Router v4+**
 
+---
+
+<img src="./docs/CacheRoute.gif">
+
+---
+
 ## Problem
 
 Using `Route`, component can not be cached while going forward or back which lead to **losing data and interaction**
 
+---
+
 ## Reason & Solution
 
-Component would be unmounted when `Route` was unmatched 
+Component would be unmounted when `Route` was unmatched
 
 After reading source code of `Route` we found that using `children` prop as a function could help to control rendering behavior.
 
 **Hiding instead of Removing** would fix this issue.
 
-https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L42-L63
+https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L41-L63
+
+---
 
 ## Install
 
 ```bash
 npm install react-router-cache-route --save
+# or
+yarn add react-router-cache-route
 ```
+
+---
 
 ## Usage
 
-Can use `CacheRoute` with `component`, `render`, `children` prop
+Replace `Route` with `CacheRoute`
 
-**DO NOT** put it in `Switch` component, use `CacheSwitch` instead
-
-Use `when` prop to decide when you need to use the cache, the optional value is [`forward`, `back`, `always`] , `forward` default
-
-Use `className` prop for adding custom style to the cache wrapper component
-
-You can also customize how the cached components are hidden using `behavior` props which would return a `props` effective on the wrapper component
+Replace `Switch` with `CacheSwitch` (Because `Switch` only keeps the first matching state route and unmount the others)
 
 ```javascript
 import React from 'react'
-import { HashRouter as Router, Switch, Route } from 'react-router-dom'
+import { HashRouter as Router, Route } from 'react-router-dom'
 import CacheRoute, { CacheSwitch } from 'react-router-cache-route'
 
-import List from './components/List'
-import Item from './components/Item'
-
-import List2 from './components/List2'
-import Item2 from './components/Item2'
+import List from './views/List'
+import Item from './views/Item'
 
 const App = () => (
   <Router>
-    {/* 
-      Can also use render, children props
-      <CacheRoute exact path="/list" render={props => <List {...props} />} />
-      or 
-      <CacheRoute exact path="/list">
-        {props => <List {...props} />}
-      </CacheRoute>
-      or
-      <CacheRoute exact path="/list">
-        <div>
-          Support muiltple children
-        </div>
-        <List />
-      </CacheRoute>
-    */}
-    <CacheRoute exact path="/list" component={List} when="always" /> 
-    <Switch>
-      <Route exact path="/item/:id" component={Item} />
-    </Switch>
-
     <CacheSwitch>
-      <CacheRoute 
-        exact 
-        path="/list2" 
-        component={List2} 
-        className="custom-style"
-        behavior={cached => (cached ? {
-          style: {
-            position: 'absolute',
-            zIndex: -9999,
-            opacity: 0,
-            visibility: 'hidden',
-            pointerEvents: 'none'
-          },
-          className: '__CacheRoute__cached'
-        } : {
-          className: '__CacheRoute__uncached'
-        })}
-      />
-      <Route exact path="/item2/:id" component={Item2} />
-      <Route
-        render={() => (
-          <div>404 Not Found</div>
-        )}
-      />
+      <CacheRoute exact path="/list" component={List} />
+      <Route exact path="/item/:id" component={Item} />
+      <Route render={() => <div>404 Not Found</div>} />
     </CacheSwitch>
   </Router>
 )
 
 export default App
 ```
+
+---
+
+## CacheRoute props
+
+| name      | type                  | default                                                        | description                                                                                                                    |
+| --------- | --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| when      | `String` / `Function` | `"forward"`                                                    | Decide when to cache                                                                                                           |
+| className | `String`              | -                                                              | `className` prop for the wrapper component                                                                                     |
+| behavior  | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | Return `props` effective on the wrapper component to control rendering behavior                                                |
+| cacheKey  | `String`              | -                                                              | For imperative control caching                                                                                                 |
+| unmount   | `Boolean`             | `false`                                                        | Whether to unmount the real dom node after cached, to save performance (Will cause losing the scroll position after recovered) |
+
+`CacheRoute` is only a wrapper component that works based on the `children` property of `Route`, and does not affect the functionality of `Route` itself.
+
+For the rest of the properties, please refer to https://reacttraining.com/react-router/
+
+---
+
+### About `when`
+
+The following values can be taken when the type is `String`
+
+- **[forward]** Cache when **forward** behavior occurs, corresponding to the `PUSH` or `REPLACE` action in react-router
+- **[back]** Cache when **back** behavior occurs, corresponding to the `POP` action in react-router
+- **[always]** Always cache routes when leave, no matter forward or backward
+
+When the type is `Function`, the component's `props` will be accepted as the first argument, return `true/false` to determine whether to cache.
+
+---
 
 ## Lifecycles
 
@@ -113,13 +107,13 @@ Component with CacheRoute will accept one prop named `cacheLifecycles` which con
 import React, { Component } from 'react'
 
 export default class List extends Component {
-  constructor(props, ...args) {
-    super(props, ...args)
+  constructor(props) {
+    super(props)
 
     props.cacheLifecycles.didCache(this.componentDidCache)
     props.cacheLifecycles.didRecover(this.componentDidRecover)
   }
-  
+
   componentDidCache = () => {
     console.log('List cached')
   }
@@ -136,6 +130,8 @@ export default class List extends Component {
 }
 
 ```
+
+---
 
 ## Drop cache manually
 
@@ -154,6 +150,3 @@ console.log(getCachingKeys()) // will receive ['MyComponent'] if CacheRoute is c
 dropByCacheKey('MyComponent')
 ...
 ```
-
-
-

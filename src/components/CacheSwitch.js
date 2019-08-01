@@ -7,6 +7,7 @@ import {
   __RouterContext
 } from 'react-router-dom'
 
+import { COMPUTED_UNMATCH_KEY, isMatch } from '../core/CacheComponent'
 import Updatable from '../core/Updatable'
 import SwitchFragment from './SwitchFragment'
 import { isNull, isExist } from '../helpers/is'
@@ -35,12 +36,11 @@ class CacheSwitch extends Switch {
     const { children } = this.props
     const { location, match: contextMatch } = this.getContext()
 
-    let __matched__already = false
+    let __matchedAlready = false
 
     return (
-      <Updatable
-        match={contextMatch}
-        render={() => (
+      <Updatable when={isMatch(contextMatch)}>
+        {() => (
           <SwitchFragment>
             {React.Children.map(children, element => {
               if (!React.isValidElement(element)) {
@@ -48,7 +48,7 @@ class CacheSwitch extends Switch {
               }
 
               const path = element.props.path || element.props.from
-              const match = __matched__already
+              const match = __matchedAlready
                 ? null
                 : path
                   ? matchPath(
@@ -81,14 +81,14 @@ class CacheSwitch extends Switch {
                      */
                     computedMatch: isNull(match)
                       ? {
-                          __CacheRoute__computedMatch__null: true
+                          [COMPUTED_UNMATCH_KEY]: true
                         }
                       : match
                   })
                   break
                 default:
                   child =
-                    match && !__matched__already
+                    match && !__matchedAlready
                       ? React.cloneElement(element, {
                           location,
                           computedMatch: match
@@ -96,15 +96,15 @@ class CacheSwitch extends Switch {
                       : null
               }
 
-              if (!__matched__already) {
-                __matched__already = !!match
+              if (!__matchedAlready) {
+                __matchedAlready = !!match
               }
 
               return child
             })}
           </SwitchFragment>
         )}
-      />
+      </Updatable>
     )
   }
 }

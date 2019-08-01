@@ -2,27 +2,21 @@ import { run } from '../helpers/try'
 
 const __components = {}
 
-export const register = (key, route) => {
-  __components[key] = route
+const getCachedComponentEntries = () =>
+  Object.entries(__components).filter(([, component]) => component.state.cached)
+
+export const register = (key, component) => {
+  __components[key] = component
 }
 
-export const dropByCacheKey = key => {
+export const dropByCacheKey = key =>
   run(__components, [key, 'setState'], {
     cached: false
   })
-}
 
 export const clearCache = () => {
-  Object.entries(__components)
-    .filter(([, component]) => component.state.cached)
-    .forEach(([key]) =>
-      run(__components, [key, 'setState'], {
-        cached: false
-      })
-    )
+  getCachedComponentEntries().forEach(([key]) => dropByCacheKey(key))
 }
 
 export const getCachingKeys = () =>
-  Object.entries(__components)
-    .filter(([, component]) => component.state.cached)
-    .map(([key]) => key)
+  getCachedComponentEntries().map(([key]) => key)
