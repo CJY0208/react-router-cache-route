@@ -79,7 +79,7 @@ export default App
 | className | `String`              | -                                                              | `className` prop for the wrapper component                                                                                     |
 | behavior  | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | Return `props` effective on the wrapper component to control rendering behavior                                                |
 | cacheKey  | `String`              | -                                                              | For imperative control caching                                                                                                 |
-| unmount   | `Boolean`             | `false`                                                        | Whether to unmount the real dom node after cached, to save performance (Will cause losing the scroll position after recovered) |
+| unmount (UNSTABLE)   | `Boolean`             | `false`                                                        | Whether to unmount the real dom node after cached, to save performance (Will cause losing the scroll position after recovered) |
 
 `CacheRoute` is only a wrapper component that works based on the `children` property of `Route`, and does not affect the functionality of `Route` itself.
 
