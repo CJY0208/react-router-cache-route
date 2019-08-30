@@ -79,7 +79,7 @@ export default App
 | className | `String`              | -                                                              | 作用于包裹容器上的样式类名                                        |
 | behavior  | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | 返回一个作用于包裹容器的 `props`，控制包裹容器的渲染方式          |
 | cacheKey  | `String`              | -                                                              | 增加此属性用于命令式控制缓存                                      |
-| unmount   | `Boolean`             | `false`                                                        | 缓存时是否卸载 dom 节点，用于节约性能（将导致恢复时滚动位置丢失） |
+| unmount （实验性）  | `Boolean`             | `false`                                                        | 缓存时是否卸载 dom 节点，用于节约性能（将导致恢复时滚动位置丢失） |
 
 `CacheRoute` 仅是基于 `Route` 的 `children` 属性工作的一个封装组件，不影响 `Route` 本身属性的功能
 
