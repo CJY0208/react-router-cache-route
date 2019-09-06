@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import { isExist, isFunction } from '../helpers/is'
 import { run, get, value } from '../helpers/try'
+import saveScrollPos from '../helpers/saveScrollPos'
 import { register } from './manager'
 
 const __isUsingNewLifecycle =
@@ -86,12 +87,14 @@ export default class CacheComponent extends Component {
       PropTypes.oneOf(['forward', 'back', 'always'])
     ]),
     behavior: PropTypes.func,
-    unmount: PropTypes.bool
+    unmount: PropTypes.bool,
+    saveScrollPosition: PropTypes.bool
   }
 
   static defaultProps = {
     when: 'forward',
     unmount: false,
+    saveScrollPosition: false,
     behavior: cached =>
       cached
         ? {
@@ -155,6 +158,7 @@ export default class CacheComponent extends Component {
 
   __parentNode
   __placeholderNode
+  __revertScrollPos
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.cached || !this.state.cached) {
       return
@@ -177,6 +181,9 @@ export default class CacheComponent extends Component {
     }
 
     if (prevState.matched === false && this.state.matched === true) {
+      if (this.props.saveScrollPosition) {
+        run(this.__revertScrollPos)
+      }
       return run(this, 'cacheLifecycles.__listener.didRecover')
     }
   }
@@ -194,6 +201,10 @@ export default class CacheComponent extends Component {
           this.__placeholderNode
         )
         run(this.__parentNode, 'removeChild', this.__placeholderNode)
+      } else {
+        if (this.props.saveScrollPosition) {
+          this.__revertScrollPos = saveScrollPos(this.wrapper)
+        }
       }
     }
 

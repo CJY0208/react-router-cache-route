@@ -1,6 +1,6 @@
 {
   "name": "react-router-cache-route",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "cache-route for react-router base on react v15+ and router v4+",
   "main": "index.js",
   "scripts": {

@@ -15,7 +15,8 @@ export default class CacheRoute extends Component {
   static propTypes = {
     component: PropTypes.elementType || PropTypes.any,
     render: PropTypes.func,
-    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node])
+    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
+    computedMatchForCacheRoute: PropTypes.object
   }
 
   render() {
@@ -28,6 +29,8 @@ export default class CacheRoute extends Component {
       behavior,
       cacheKey,
       unmount,
+      saveScrollPosition,
+      computedMatchForCacheRoute,
       ...__restProps
     } = this.props
 
@@ -41,6 +44,10 @@ export default class CacheRoute extends Component {
       render = () => children
     }
 
+    if (computedMatchForCacheRoute) {
+      __restProps.computedMatch = computedMatchForCacheRoute
+    }
+
     return (
       /**
        * Only children prop of Route can help to control rendering behavior
@@ -50,7 +57,7 @@ export default class CacheRoute extends Component {
         {props => (
           <CacheComponent
             {...props}
-            {...{ when, className, behavior, cacheKey, unmount }}
+            {...{ when, className, behavior, cacheKey, unmount, saveScrollPosition }}
           >
             {cacheLifecycles => (
               <Updatable when={isMatch(props.match)}>

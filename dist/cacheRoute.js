@@ -28,6 +28,10 @@
     return !(isUndefined(val) || isNull(val));
   };
 
+  var isArray = function isArray(val) {
+    return val instanceof Array;
+  };
+
   var isNaN = function isNaN(val) {
     return val !== val;
   };
@@ -205,6 +209,62 @@
       }
     };
   }();
+
+  var toConsumableArray = function (arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    } else {
+      return Array.from(arr);
+    }
+  };
+
+  var flatten = function flatten(array) {
+    return array.reduce(function (res, item) {
+      return [].concat(toConsumableArray(res), toConsumableArray(isArray(item) ? flatten(item) : [item]));
+    }, []);
+  };
+
+  function getScrollableNodes() {
+    var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+
+    var checkStyleList = ['overflow', 'overflow-x', 'overflow-y'];
+    var scrollableStyleValue = ['auto', 'scroll'];
+
+    return [].concat(toConsumableArray(from.querySelectorAll('*')), [from]).filter(function (dom) {
+      var styles = getComputedStyle(dom);
+
+      return checkStyleList.some(function (style) {
+        return scrollableStyleValue.includes(styles[style]);
+      }) && dom.scrollWidth > dom.offsetWidth || dom.scrollHeight > dom.offsetHeight;
+    });
+  }
+
+  function saveScrollPos() {
+    var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+
+    var nodes = flatten((!isArray(from) ? [from] : from).map(getScrollableNodes));
+    var saver = nodes.map(function (node) {
+      return [node, {
+        x: node.scrollLeft,
+        y: node.scrollTop
+      }];
+    });
+
+    return function revert() {
+      saver.forEach(function (_ref) {
+        var _ref2 = slicedToArray(_ref, 2),
+            node = _ref2[0],
+            _ref2$ = _ref2[1],
+            x = _ref2$.x,
+            y = _ref2$.y;
+
+        node.scrollLeft = x;
+        node.scrollTop = y;
+      });
+    };
+  }
 
   var __components = {};
 
@@ -393,6 +453,9 @@
         }
 
         if (prevState.matched === false && this.state.matched === true) {
+          if (this.props.saveScrollPosition) {
+            run(this.__revertScrollPos);
+          }
           return run(this, 'cacheLifecycles.__listener.didRecover');
         }
       }
@@ -405,6 +468,10 @@
           if (willRecover) {
             run(this.__parentNode, 'insertBefore', this.wrapper, this.__placeholderNode);
             run(this.__parentNode, 'removeChild', this.__placeholderNode);
+          } else {
+            if (this.props.saveScrollPosition) {
+              this.__revertScrollPos = saveScrollPos(this.wrapper);
+            }
           }
         }
 
@@ -455,11 +522,13 @@
     className: PropTypes.string,
     when: PropTypes.oneOfType([PropTypes.func, PropTypes.oneOf(['forward', 'back', 'always'])]),
     behavior: PropTypes.func,
-    unmount: PropTypes.bool
+    unmount: PropTypes.bool,
+    saveScrollPosition: PropTypes.bool
   };
   CacheComponent.defaultProps = {
     when: 'forward',
     unmount: false,
+    saveScrollPosition: false,
     behavior: function behavior(cached) {
       return cached ? {
         style: {
@@ -523,7 +592,9 @@
             behavior = _props.behavior,
             cacheKey = _props.cacheKey,
             unmount = _props.unmount,
-            __restProps = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey', 'unmount']);
+            saveScrollPosition = _props.saveScrollPosition,
+            computedMatchForCacheRoute = _props.computedMatchForCacheRoute,
+            __restProps = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey', 'unmount', 'saveScrollPosition', 'computedMatchForCacheRoute']);
 
         /**
          * Note:
@@ -539,6 +610,10 @@
           };
         }
 
+        if (computedMatchForCacheRoute) {
+          __restProps.computedMatch = computedMatchForCacheRoute;
+        }
+
         return (
           /**
            * Only children prop of Route can help to control rendering behavior
@@ -550,7 +625,7 @@
             function (props) {
               return React__default.createElement(
                 CacheComponent,
-                _extends({}, props, { when: when, className: className, behavior: behavior, cacheKey: cacheKey, unmount: unmount }),
+                _extends({}, props, { when: when, className: className, behavior: behavior, cacheKey: cacheKey, unmount: unmount, saveScrollPosition: saveScrollPosition }),
                 function (cacheLifecycles) {
                   return React__default.createElement(
                     Updatable,
@@ -579,7 +654,8 @@
   CacheRoute.propTypes = {
     component: PropTypes.elementType || PropTypes.any,
     render: PropTypes.func,
-    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node])
+    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
+    computedMatchForCacheRoute: PropTypes.object
   };
 
   function getFragment() {
@@ -654,7 +730,9 @@
     createClass(CacheSwitch, [{
       key: 'render',
       value: function render() {
-        var children = this.props.children;
+        var _props = this.props,
+            children = _props.children,
+            which = _props.which;
 
         var _getContext = this.getContext(),
             location = _getContext.location,
@@ -680,28 +758,19 @@
                 }), contextMatch) : contextMatch;
 
                 var child = void 0;
-                switch (value(get(element, 'type.componentName'), get(element, 'type.displayName'))) {
-                  case 'CacheRoute':
-                    child = React__default.cloneElement(element, {
-                      location: location,
-                      /**
-                       * https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L57
-                       *
-                       * Note:
-                       * Route would use computedMatch as its next match state ONLY when computedMatch is a true value
-                       * So here we have to do some trick to let the unmatch result pass Route's computedMatch check
-                       *
-                       * 注意：只有当 computedMatch 为真值时，Route 才会使用 computedMatch 作为其下一个匹配状态
-                       * 所以这里我们必须做一些手脚，让 unmatch 结果通过 Route 的 computedMatch 检查
-                       */
-                      computedMatch: isNull(match) ? defineProperty({}, COMPUTED_UNMATCH_KEY, true) : match
-                    });
-                    break;
-                  default:
-                    child = match && !__matchedAlready ? React__default.cloneElement(element, {
-                      location: location,
-                      computedMatch: match
-                    }) : null;
+
+                if (which(element)) {
+                  child = React__default.cloneElement(element, _extends({
+                    location: location,
+                    computedMatch: match
+                  }, isNull(match) ? {
+                    computedMatchForCacheRoute: defineProperty({}, COMPUTED_UNMATCH_KEY, true)
+                  } : null));
+                } else {
+                  child = match && !__matchedAlready ? React__default.cloneElement(element, {
+                    location: location,
+                    computedMatch: match
+                  }) : null;
                 }
 
                 if (!__matchedAlready) {
@@ -722,7 +791,8 @@
     CacheSwitch.propTypes = {
       children: PropTypes.node,
       location: PropTypes.object.isRequired,
-      match: PropTypes.object.isRequired
+      match: PropTypes.object.isRequired,
+      which: PropTypes.func
     };
 
     CacheSwitch = reactRouterDom.withRouter(CacheSwitch);
@@ -735,9 +805,16 @@
 
     CacheSwitch.propTypes = {
       children: PropTypes.node,
-      location: PropTypes.object
+      location: PropTypes.object,
+      which: PropTypes.func
     };
   }
+
+  CacheSwitch.defaultProps = {
+    which: function which(element) {
+      return value(get(element, 'type.componentName'), get(element, 'type.displayName')) === 'CacheRoute';
+    }
+  };
 
   var CacheSwitch$1 = CacheSwitch;
 
