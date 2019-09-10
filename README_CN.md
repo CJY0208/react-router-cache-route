@@ -2,6 +2,8 @@
 
 搭配 `react-router` 工作的、带缓存功能的路由组件，类似于 `Vue` 中的 `keep-alive` 功能
 
+**如果只想要单纯的 `<KeepAlive />` 功能，试试 [react-activation](https://github.com/CJY0208/react-activation)**
+
 **React v15+**
 
 **React-Router v4+**
