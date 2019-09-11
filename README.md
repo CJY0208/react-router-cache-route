@@ -4,6 +4,8 @@
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
+**If you want `<KeepAlive />` only, try [react-activation](https://github.com/CJY0208/react-activation)**
+
 **React v15+**
 
 **React-Router v4+**
