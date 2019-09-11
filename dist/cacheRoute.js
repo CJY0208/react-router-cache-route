@@ -226,26 +226,29 @@
     }, []);
   };
 
+  var checkStyleList = ['overflow', 'overflow-x', 'overflow-y'];
+  var scrollableStyleValue = ['auto', 'scroll'];
+
   function getScrollableNodes() {
     var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-    var checkStyleList = ['overflow', 'overflow-x', 'overflow-y'];
-    var scrollableStyleValue = ['auto', 'scroll'];
+    return [].concat(toConsumableArray(from.querySelectorAll('*')), [from]).filter(function (node) {
+      var styles = getComputedStyle(node);
 
-    return [].concat(toConsumableArray(from.querySelectorAll('*')), [from]).filter(function (dom) {
-      var styles = getComputedStyle(dom);
-
-      return checkStyleList.some(function (style) {
+      return !node.saving && // 过滤已经进入保存状态的 DOM 以节约性能
+      checkStyleList.some(function (style) {
         return scrollableStyleValue.includes(styles[style]);
-      }) && dom.scrollWidth > dom.offsetWidth || dom.scrollHeight > dom.offsetHeight;
+      }) && node.scrollWidth > node.offsetWidth || node.scrollHeight > node.offsetHeight;
     });
   }
 
-  function saveScrollPos() {
+  function saveScrollPosition() {
     var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
     var nodes = flatten((!isArray(from) ? [from] : from).map(getScrollableNodes));
     var saver = nodes.map(function (node) {
+      node.saving = true;
+
       return [node, {
         x: node.scrollLeft,
         y: node.scrollTop
@@ -262,6 +265,8 @@
 
         node.scrollLeft = x;
         node.scrollTop = y;
+
+        delete node.saving;
       });
     };
   }
@@ -303,6 +308,16 @@
 
       return key;
     });
+  };
+
+  var getCachingComponents = function getCachingComponents() {
+    return getCachedComponentEntries().reduce(function (res, _ref7) {
+      var _ref8 = slicedToArray(_ref7, 2),
+          key = _ref8[0],
+          component = _ref8[1];
+
+      return _extends({}, res, defineProperty({}, key, component));
+    }, {});
   };
 
   var __isUsingNewLifecycle = Number(get(run(React__default, 'version.match', /^\d*\.\d*/), [0])) >= 16.3;
@@ -413,6 +428,8 @@
       } : undefined;
 
 
+      _this.__cacheCreateTime = Date.now();
+      _this.__cacheUpdateTime = _this.__cacheCreateTime;
       if (props.cacheKey) {
         register(props.cacheKey, _this);
       }
@@ -449,6 +466,7 @@
             run(this.__parentNode, 'insertBefore', this.__placeholderNode, this.wrapper);
             run(this.__parentNode, 'removeChild', this.wrapper);
           }
+          this.__cacheUpdateTime = Date.now();
           return run(this, 'cacheLifecycles.__listener.didCache');
         }
 
@@ -456,6 +474,7 @@
           if (this.props.saveScrollPosition) {
             run(this.__revertScrollPos);
           }
+          this.__cacheUpdateTime = Date.now();
           return run(this, 'cacheLifecycles.__listener.didRecover');
         }
       }
@@ -470,7 +489,7 @@
             run(this.__parentNode, 'removeChild', this.__placeholderNode);
           } else {
             if (this.props.saveScrollPosition) {
-              this.__revertScrollPos = saveScrollPos(this.wrapper);
+              this.__revertScrollPos = saveScrollPosition(this.wrapper);
             }
           }
         }
@@ -824,6 +843,7 @@
   exports.dropByCacheKey = dropByCacheKey;
   exports.getCachingKeys = getCachingKeys;
   exports.clearCache = clearCache;
+  exports.getCachingComponents = getCachingComponents;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

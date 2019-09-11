@@ -20,3 +20,9 @@ export const clearCache = () => {
 
 export const getCachingKeys = () =>
   getCachedComponentEntries().map(([key]) => key)
+
+export const getCachingComponents = () =>
+  getCachedComponentEntries().reduce((res, [key, component]) => ({
+    ...res,
+    [key]: component
+  }), {})

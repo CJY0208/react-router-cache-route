@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import { isExist, isFunction } from '../helpers/is'
 import { run, get, value } from '../helpers/try'
-import saveScrollPos from '../helpers/saveScrollPos'
+import saveScrollPosition from '../helpers/saveScrollPosition'
 import { register } from './manager'
 
 const __isUsingNewLifecycle =
@@ -108,6 +108,8 @@ export default class CacheComponent extends Component {
   constructor(props, ...args) {
     super(props, ...args)
 
+    this.__cacheCreateTime = Date.now()
+    this.__cacheUpdateTime = this.__cacheCreateTime
     if (props.cacheKey) {
       register(props.cacheKey, this)
     }
@@ -159,7 +161,7 @@ export default class CacheComponent extends Component {
   __parentNode
   __placeholderNode
   __revertScrollPos
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {    
     if (!prevState.cached || !this.state.cached) {
       return
     }
@@ -177,6 +179,7 @@ export default class CacheComponent extends Component {
         )
         run(this.__parentNode, 'removeChild', this.wrapper)
       }
+      this.__cacheUpdateTime = Date.now()
       return run(this, 'cacheLifecycles.__listener.didCache')
     }
 
@@ -184,8 +187,9 @@ export default class CacheComponent extends Component {
       if (this.props.saveScrollPosition) {
         run(this.__revertScrollPos)
       }
+      this.__cacheUpdateTime = Date.now()
       return run(this, 'cacheLifecycles.__listener.didRecover')
-    }
+    }    
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -203,7 +207,7 @@ export default class CacheComponent extends Component {
         run(this.__parentNode, 'removeChild', this.__placeholderNode)
       } else {
         if (this.props.saveScrollPosition) {
-          this.__revertScrollPos = saveScrollPos(this.wrapper)
+          this.__revertScrollPos = saveScrollPosition(this.wrapper)
         }
       }
     }
