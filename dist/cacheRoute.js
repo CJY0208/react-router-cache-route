@@ -790,7 +790,7 @@
         }
 
         if (isNumber(multiple)) {
-          multiple = clamp(multiple);
+          multiple = clamp(multiple, 1);
         }
 
         return (
