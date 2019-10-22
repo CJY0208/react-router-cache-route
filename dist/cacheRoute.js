@@ -83,6 +83,12 @@
     }, undefined);
   };
 
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
   var classCallCheck = function (instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -220,35 +226,81 @@
     }
   };
 
+  var getImplementation = function getImplementation() {
+    if (typeof self !== 'undefined') {
+      return self;
+    }
+    if (typeof window !== 'undefined') {
+      return window;
+    }
+    if (typeof global !== 'undefined') {
+      return global;
+    }
+
+    return Function('return this')();
+  };
+
+  var implementation = getImplementation();
+
+  var getGlobal = function getGlobal() {
+    if ((typeof global === 'undefined' ? 'undefined' : _typeof(global)) !== 'object' || !global || global.Math !== Math || global.Array !== Array) {
+      return implementation;
+    }
+    return global;
+  };
+
+  var globalThis = getGlobal();
+
   var flatten = function flatten(array) {
     return array.reduce(function (res, item) {
       return [].concat(toConsumableArray(res), toConsumableArray(isArray(item) ? flatten(item) : [item]));
     }, []);
   };
 
-  var checkStyleList = ['overflow', 'overflow-x', 'overflow-y'];
-  var scrollableStyleValue = ['auto', 'scroll'];
+  /**
+   * [钳子] 用来将数字限制在给定范围内
+   * @param {Number} value 被限制值
+   * @param {Number} min 最小值
+   * @param {Number} max 最大值
+   */
+  var clamp = function clamp(value, min) {
+    var max = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Number.MAX_VALUE;
 
-  function getScrollableNodes() {
-    var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+    if (value < min) {
+      return min;
+    }
 
-    return [].concat(toConsumableArray(from.querySelectorAll('*')), [from]).filter(function (node) {
-      var styles = getComputedStyle(node);
+    if (value > max) {
+      return max;
+    }
 
-      return !node.saving && // 过滤已经进入保存状态的 DOM 以节约性能
-      checkStyleList.some(function (style) {
-        return scrollableStyleValue.includes(styles[style]);
-      }) && node.scrollWidth > node.offsetWidth || node.scrollHeight > node.offsetHeight;
-    });
+    return value;
+  };
+
+  var body = get(globalThis, 'document.body');
+
+  function isScrollableNode() {
+    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    // if (!isExist(node)) {
+    //   return false
+    // }
+
+    return node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight;
   }
 
-  function saveScrollPosition() {
-    var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+  function getScrollableNodes(from) {
+    if (!isFunction(get(globalThis, 'document.getElementById'))) {
+      return [];
+    }
 
-    var nodes = flatten((!isArray(from) ? [from] : from).map(getScrollableNodes));
+    return [].concat(toConsumableArray(value(run(from, 'querySelectorAll', '*'), [])), [from]).filter(isScrollableNode);
+  }
+
+  function saveScrollPosition(from) {
+    var nodes = [].concat(toConsumableArray(new Set([].concat(toConsumableArray(flatten((!isArray(from) ? [from] : from).map(getScrollableNodes))), toConsumableArray([get(globalThis, 'document.documentElement', {}), body].filter(isScrollableNode))))));
+
     var saver = nodes.map(function (node) {
-      node.saving = true;
-
       return [node, {
         x: node.scrollLeft,
         y: node.scrollTop
@@ -265,8 +317,6 @@
 
         node.scrollLeft = x;
         node.scrollTop = y;
-
-        delete node.saving;
       });
     };
   }
@@ -276,20 +326,42 @@
   var getCachedComponentEntries = function getCachedComponentEntries() {
     return Object.entries(__components).filter(function (_ref) {
       var _ref2 = slicedToArray(_ref, 2),
-          component = _ref2[1];
+          cache = _ref2[1];
 
-      return component.state.cached;
+      return cache instanceof CacheComponent ? cache.state.cached : Object.values(cache).some(function (cache) {
+        return cache.state.cached;
+      });
     });
+  };
+
+  var getCache = function getCache() {
+    return _extends({}, __components);
   };
 
   var register = function register(key, component) {
     __components[key] = component;
   };
 
+  var remove = function remove(key) {
+    delete __components[key];
+  };
+
+  var dropComponent = function dropComponent(component) {
+    return run(component, 'reset');
+  };
+
   var dropByCacheKey = function dropByCacheKey(key) {
-    return run(__components, [key, 'setState'], {
-      cached: false
-    });
+    var cache = get(__components, key);
+
+    if (!cache) {
+      return;
+    }
+
+    if (cache instanceof CacheComponent) {
+      dropComponent(cache);
+    } else {
+      Object.values(cache).forEach(dropComponent);
+    }
   };
 
   var clearCache = function clearCache() {
@@ -314,9 +386,15 @@
     return getCachedComponentEntries().reduce(function (res, _ref7) {
       var _ref8 = slicedToArray(_ref7, 2),
           key = _ref8[0],
-          component = _ref8[1];
+          cache = _ref8[1];
 
-      return _extends({}, res, defineProperty({}, key, component));
+      return _extends({}, res, cache instanceof CacheComponent ? defineProperty({}, key, cache) : Object.entries(cache).reduce(function (res, _ref10) {
+        var _ref11 = slicedToArray(_ref10, 2),
+            pathname = _ref11[0],
+            cache = _ref11[1];
+
+        return _extends({}, res, defineProperty({}, key + '.' + pathname, cache));
+      }, {}));
     }, {});
   };
 
@@ -427,15 +505,51 @@
         _this.setState(nextState);
       } : undefined;
 
+      _this.injectDOM = function () {
+        try {
+          run(_this.__parentNode, 'insertBefore', _this.wrapper, _this.__placeholderNode);
+          run(_this.__parentNode, 'removeChild', _this.__placeholderNode);
+        } catch (err) {
+          // nothing
+        }
+      };
+
+      _this.ejectDOM = function () {
+        try {
+          var parentNode = get(_this.wrapper, 'parentNode');
+          _this.__parentNode = parentNode;
+
+          run(_this.__parentNode, 'insertBefore', _this.__placeholderNode, _this.wrapper);
+          run(_this.__parentNode, 'removeChild', _this.wrapper);
+        } catch (err) {
+          // nothing
+        }
+      };
+
+      _this.reset = function () {
+        delete _this.__revertScrollPos;
+
+        _this.setState({
+          cached: false
+        });
+      };
 
       _this.__cacheCreateTime = Date.now();
       _this.__cacheUpdateTime = _this.__cacheCreateTime;
       if (props.cacheKey) {
-        register(props.cacheKey, _this);
+        if (get(props.cacheKey, 'multiple')) {
+          var _props$cacheKey = props.cacheKey,
+              cacheKey = _props$cacheKey.cacheKey,
+              pathname = _props$cacheKey.pathname;
+
+          register(cacheKey, _extends({}, getCache()[cacheKey], defineProperty({}, pathname, _this)));
+        } else {
+          register(props.cacheKey, _this);
+        }
       }
 
       if (typeof document !== 'undefined') {
-        _this.__placeholderNode = document.createComment(' Route cached ' + (props.cacheKey ? 'with cacheKey: "' + props.cacheKey + '" ' : ''));
+        _this.__placeholderNode = document.createComment(' Route cached ' + (props.cacheKey ? 'with cacheKey: "' + get(props.cacheKey, 'cacheKey', props.cacheKey) + '" ' : ''));
       }
 
       _this.state = getDerivedStateFromProps(props, {
@@ -460,11 +574,7 @@
 
         if (prevState.matched === true && this.state.matched === false) {
           if (this.props.unmount) {
-            var parentNode = get(this.wrapper, 'parentNode');
-            this.__parentNode = parentNode;
-
-            run(this.__parentNode, 'insertBefore', this.__placeholderNode, this.wrapper);
-            run(this.__parentNode, 'removeChild', this.wrapper);
+            this.ejectDOM();
           }
           this.__cacheUpdateTime = Date.now();
           return run(this, 'cacheLifecycles.__listener.didCache');
@@ -481,20 +591,50 @@
     }, {
       key: 'shouldComponentUpdate',
       value: function shouldComponentUpdate(nextProps, nextState) {
-        if (this.props.unmount) {
-          var willRecover = this.state.matched === false && nextState.matched === true;
+        var willRecover = this.state.matched === false && nextState.matched === true;
+        var willDrop = this.state.cached === true && nextState.cached === false;
+        var shouldUpdate = this.state.matched || nextState.matched || this.state.cached !== nextState.cached;
 
-          if (willRecover) {
-            run(this.__parentNode, 'insertBefore', this.wrapper, this.__placeholderNode);
-            run(this.__parentNode, 'removeChild', this.__placeholderNode);
-          } else {
-            if (this.props.saveScrollPosition) {
-              this.__revertScrollPos = saveScrollPosition(this.wrapper);
-            }
+        if (shouldUpdate) {
+          if (this.props.unmount && willDrop || willRecover) {
+            this.injectDOM();
+          }
+
+          if (!(willDrop || willRecover) && this.props.saveScrollPosition) {
+            this.__revertScrollPos = saveScrollPosition(this.props.unmount ? this.wrapper : undefined);
           }
         }
 
-        return this.state.matched || nextState.matched || this.state.cached !== nextState.cached;
+        return shouldUpdate;
+      }
+    }, {
+      key: 'componentWillUnmount',
+      value: function componentWillUnmount() {
+        var _props = this.props,
+            cacheKeyConfig = _props.cacheKey,
+            unmount = _props.unmount;
+
+
+        if (get(cacheKeyConfig, 'multiple')) {
+          var cacheKey = cacheKeyConfig.cacheKey,
+              pathname = cacheKeyConfig.pathname;
+
+          var cache = _extends({}, getCache()[cacheKey]);
+
+          delete cache[pathname];
+
+          if (Object.keys(cache).length === 0) {
+            remove(cacheKey);
+          } else {
+            register(cacheKey, cache);
+          }
+        } else {
+          remove(cacheKeyConfig);
+        }
+
+        if (unmount) {
+          this.injectDOM();
+        }
       }
     }, {
       key: 'render',
@@ -504,11 +644,11 @@
         var _state = this.state,
             matched = _state.matched,
             cached = _state.cached;
-        var _props = this.props,
-            _props$className = _props.className,
-            propsClassName = _props$className === undefined ? '' : _props$className,
-            behavior = _props.behavior,
-            children = _props.children;
+        var _props2 = this.props,
+            _props2$className = _props2.className,
+            propsClassName = _props2$className === undefined ? '' : _props2$className,
+            behavior = _props2.behavior,
+            children = _props2.children;
 
         var _value = value(run(behavior, undefined, !matched), {}),
             _value$className = _value.className,
@@ -590,18 +730,30 @@
   var isEmptyChildren = function isEmptyChildren(children) {
     return React__default.Children.count(children) === 0;
   };
+  var isFragmentable = isExist(React.Fragment);
 
   var CacheRoute = function (_Component) {
     inherits(CacheRoute, _Component);
 
     function CacheRoute() {
+      var _ref;
+
+      var _temp, _this, _ret;
+
       classCallCheck(this, CacheRoute);
-      return possibleConstructorReturn(this, (CacheRoute.__proto__ || Object.getPrototypeOf(CacheRoute)).apply(this, arguments));
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = possibleConstructorReturn(this, (_ref = CacheRoute.__proto__ || Object.getPrototypeOf(CacheRoute)).call.apply(_ref, [this].concat(args))), _this), _this.cache = {}, _temp), possibleConstructorReturn(_this, _ret);
     }
 
     createClass(CacheRoute, [{
       key: 'render',
       value: function render() {
+        var _this2 = this;
+
         var _props = this.props,
             children = _props.children,
             render = _props.render,
@@ -611,9 +763,10 @@
             behavior = _props.behavior,
             cacheKey = _props.cacheKey,
             unmount = _props.unmount,
-            saveScrollPosition = _props.saveScrollPosition,
+            saveScrollPosition$$1 = _props.saveScrollPosition,
             computedMatchForCacheRoute = _props.computedMatchForCacheRoute,
-            __restProps = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey', 'unmount', 'saveScrollPosition', 'computedMatchForCacheRoute']);
+            multiple = _props.multiple,
+            restProps = objectWithoutProperties(_props, ['children', 'render', 'component', 'className', 'when', 'behavior', 'cacheKey', 'unmount', 'saveScrollPosition', 'computedMatchForCacheRoute', 'multiple']);
 
         /**
          * Note:
@@ -622,7 +775,6 @@
          * 说明：如果 children 属性是 React Element 则定义对应的包裹组件以支持多个子组件
          */
 
-
         if (React__default.isValidElement(children) || !isEmptyChildren(children)) {
           render = function render() {
             return children;
@@ -630,7 +782,15 @@
         }
 
         if (computedMatchForCacheRoute) {
-          __restProps.computedMatch = computedMatchForCacheRoute;
+          restProps.computedMatch = computedMatchForCacheRoute;
+        }
+
+        if (multiple && !isFragmentable) {
+          multiple = false;
+        }
+
+        if (isNumber(multiple)) {
+          multiple = clamp(multiple);
         }
 
         return (
@@ -640,27 +800,96 @@
            */
           React__default.createElement(
             reactRouterDom.Route,
-            __restProps,
+            restProps,
             function (props) {
-              return React__default.createElement(
-                CacheComponent,
-                _extends({}, props, { when: when, className: className, behavior: behavior, cacheKey: cacheKey, unmount: unmount, saveScrollPosition: saveScrollPosition }),
-                function (cacheLifecycles) {
-                  return React__default.createElement(
-                    Updatable,
-                    { when: isMatch(props.match) },
-                    function () {
-                      Object.assign(props, { cacheLifecycles: cacheLifecycles });
+              var match = props.match,
+                  computedMatch = props.computedMatch,
+                  location = props.location;
 
-                      if (component) {
-                        return React__default.createElement(component, props);
+              var isMatchCurrentRoute = isMatch(props.match);
+              var currentPathname = location.pathname;
+
+              var maxMultipleCount = isNumber(multiple) ? multiple : Infinity;
+              var configProps = {
+                when: when,
+                className: className,
+                behavior: behavior,
+                cacheKey: cacheKey,
+                unmount: unmount,
+                saveScrollPosition: saveScrollPosition$$1
+              };
+
+              var renderSingle = function renderSingle(props) {
+                return React__default.createElement(
+                  CacheComponent,
+                  props,
+                  function (cacheLifecycles) {
+                    return React__default.createElement(
+                      Updatable,
+                      { when: isMatch(props.match) },
+                      function () {
+                        Object.assign(props, { cacheLifecycles: cacheLifecycles });
+
+                        if (component) {
+                          return React__default.createElement(component, props);
+                        }
+
+                        return run(render || children, undefined, props);
                       }
+                    );
+                  }
+                );
+              };
 
-                      return run(render || children, undefined, props);
-                    }
+              if (multiple && isMatchCurrentRoute) {
+                _this2.cache[currentPathname] = {
+                  updateTime: Date.now(),
+                  render: renderSingle
+                };
+
+                Object.entries(_this2.cache).sort(function (_ref2, _ref3) {
+                  var _ref5 = slicedToArray(_ref2, 2),
+                      prev = _ref5[1];
+
+                  var _ref4 = slicedToArray(_ref3, 2),
+                      next = _ref4[1];
+
+                  return next.updateTime - prev.updateTime;
+                }).forEach(function (_ref6, idx) {
+                  var _ref7 = slicedToArray(_ref6, 1),
+                      pathname = _ref7[0];
+
+                  if (idx >= maxMultipleCount) {
+                    delete _this2.cache[pathname];
+                  }
+                });
+              }
+
+              return multiple ? React__default.createElement(
+                React.Fragment,
+                null,
+                Object.entries(_this2.cache).map(function (_ref8) {
+                  var _ref9 = slicedToArray(_ref8, 2),
+                      pathname = _ref9[0],
+                      render = _ref9[1].render;
+
+                  var recomputedMatch = pathname === currentPathname ? match || computedMatch : null;
+
+                  return React__default.createElement(
+                    React.Fragment,
+                    { key: pathname },
+                    render(_extends({}, props, configProps, {
+                      cacheKey: cacheKey ? {
+                        cacheKey: cacheKey,
+                        pathname: pathname,
+                        multiple: true
+                      } : undefined,
+                      key: pathname,
+                      match: recomputedMatch
+                    }))
                   );
-                }
-              );
+                })
+              ) : renderSingle(_extends({}, props, configProps));
             }
           )
         );
@@ -674,7 +903,11 @@
     component: PropTypes.elementType || PropTypes.any,
     render: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
-    computedMatchForCacheRoute: PropTypes.object
+    computedMatchForCacheRoute: PropTypes.object,
+    multiple: PropTypes.oneOfType([PropTypes.bool, PropTypes.number])
+  };
+  CacheRoute.defaultProps = {
+    multiple: false
   };
 
   function getFragment() {

@@ -1,6 +1,9 @@
 # CacheRoute
 
-[中文说明](https://github.com/CJY0208/react-router-cache-route/blob/master/README_CN.md)
+[![size](https://img.shields.io/bundlephobia/minzip/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
+[![dm](https://img.shields.io/npm/dm/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
+
+English | [中文说明](./README_CN.md)
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
@@ -75,14 +78,15 @@ export default App
 
 ## CacheRoute props
 
-| name                          | type                  | default                                                        | description                                                                                                                                                           |
-| ----------------------------- | --------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| when                          | `String` / `Function` | `"forward"`                                                    | Decide when to cache                                                                                                                                                  |
-| className                     | `String`              | -                                                              | `className` prop for the wrapper component                                                                                                                            |
-| behavior                      | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | Return `props` effective on the wrapper component to control rendering behavior                                                                                       |
-| cacheKey                      | `String`              | -                                                              | For imperative control caching                                                                                                                                        |
-| unmount (UNSTABLE)            | `Boolean`             | `false`                                                        | Whether to unmount the real dom node after cached, to save performance (Will cause losing the scroll position after recovered, fixed with `saveScrollPosition` props) |
-| saveScrollPosition (UNSTABLE) | `Boolean`             | `false`                                                        | Effect while `unmount` is `true`, save scroll position                                                                                                                |
+| name                             | type                  | default                                                        | description                                                                                                                                                                                                                     |
+| -------------------------------- | --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| when                             | `String` / `Function` | `"forward"`                                                    | Decide when to cache                                                                                                                                                                                                            |
+| className                        | `String`              | -                                                              | `className` prop for the wrapper component                                                                                                                                                                                      |
+| behavior                         | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | Return `props` effective on the wrapper component to control rendering behavior                                                                                                                                                 |
+| cacheKey                         | `String`              | -                                                              | For imperative control caching                                                                                                                                                                                                  |
+| multiple (React v16.3+) | `Boolean` / `Number`  | `false`                                                        | Allows different caches to be distinguished by dynamic routing parameters. When the value is a number, it indicates the maximum number of caches. When the maximum value is exceeded, the oldest updated cache will be cleared. |
+| unmount (UNSTABLE)               | `Boolean`             | `false`                                                        | Whether to unmount the real dom node after cached, to save performance (Will cause losing the scroll position after recovered, fixed with `saveScrollPosition` props)                                                           |
+| saveScrollPosition (UNSTABLE)    | `Boolean`             | `false`                                                        | Save scroll position                                                                                                                                                                                                            |
 
 `CacheRoute` is only a wrapper component that works based on the `children` property of `Route`, and does not affect the functionality of `Route` itself.
 

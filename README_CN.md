@@ -1,5 +1,10 @@
 # CacheRoute
 
+[![size](https://img.shields.io/bundlephobia/minzip/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
+[![dm](https://img.shields.io/npm/dm/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
+
+[English](./README.md) | 中文说明
+
 搭配 `react-router` 工作的、带缓存功能的路由组件，类似于 `Vue` 中的 `keep-alive` 功能
 
 **如果只想要单纯的 `<KeepAlive />` 功能，试试 [react-activation](https://github.com/CJY0208/react-activation)**
@@ -81,8 +86,9 @@ export default App
 | className                     | `String`              | -                                                              | 作用于包裹容器上的样式类名                                                                                |
 | behavior                      | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | 返回一个作用于包裹容器的 `props`，控制包裹容器的渲染方式                                                  |
 | cacheKey                      | `String`              | -                                                              | 增加此属性用于命令式控制缓存                                                                              |
+| multiple （React v16.3+）     | `Boolean` / `Number`  | `false`                                                        | 允许按动态路由参数区分不同缓存，值为数字时表示最大缓存份数，超出最大值时将清除最早更新的缓存              |
 | unmount （实验性）            | `Boolean`             | `false`                                                        | 缓存时是否卸载 dom 节点，用于节约性能（单独使用将导致恢复时滚动位置丢失，可配合 saveScrollPosition 修复） |
-| saveScrollPosition （实验性） | `Boolean`             | `false`                                                        | `unmount` 为 `true` 时生效，用以保存滚动位置                                                              |
+| saveScrollPosition （实验性） | `Boolean`             | `false`                                                        | 用以保存滚动位置                                                                                          |
 
 `CacheRoute` 仅是基于 `Route` 的 `children` 属性工作的一个封装组件，不影响 `Route` 本身属性的功能
 

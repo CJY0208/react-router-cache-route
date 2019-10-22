@@ -10,8 +10,7 @@ import {
 import { COMPUTED_UNMATCH_KEY, isMatch } from '../core/CacheComponent'
 import Updatable from '../core/Updatable'
 import SwitchFragment from './SwitchFragment'
-import { isNull, isExist } from '../helpers/is'
-import { get, value } from '../helpers/try'
+import { get, value, isNull, isExist } from '../helpers'
 
 const isUsingNewContext = isExist(__RouterContext)
 

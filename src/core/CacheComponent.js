@@ -1,10 +1,15 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { isExist, isFunction } from '../helpers/is'
-import { run, get, value } from '../helpers/try'
-import saveScrollPosition from '../helpers/saveScrollPosition'
-import { register } from './manager'
+import {
+  run,
+  get,
+  value,
+  isExist,
+  isFunction,
+  saveScrollPosition
+} from '../helpers'
+import * as manager from './manager'
 
 const __isUsingNewLifecycle =
   Number(get(run(React, 'version.match', /^\d*\.\d*/), [0])) >= 16.3
@@ -111,13 +116,27 @@ export default class CacheComponent extends Component {
     this.__cacheCreateTime = Date.now()
     this.__cacheUpdateTime = this.__cacheCreateTime
     if (props.cacheKey) {
-      register(props.cacheKey, this)
+      if (get(props.cacheKey, 'multiple')) {
+        const { cacheKey, pathname } = props.cacheKey
+        manager.register(cacheKey, {
+          ...manager.getCache()[cacheKey],
+          [pathname]: this
+        })
+      } else {
+        manager.register(props.cacheKey, this)
+      }
     }
 
     if (typeof document !== 'undefined') {
       this.__placeholderNode = document.createComment(
         ` Route cached ${
-          props.cacheKey ? `with cacheKey: "${props.cacheKey}" ` : ''
+          props.cacheKey
+            ? `with cacheKey: "${get(
+                props.cacheKey,
+                'cacheKey',
+                props.cacheKey
+              )}" `
+            : ''
         }`
       )
     }
@@ -161,23 +180,44 @@ export default class CacheComponent extends Component {
   __parentNode
   __placeholderNode
   __revertScrollPos
-  componentDidUpdate(prevProps, prevState) {    
+  injectDOM = () => {
+    try {
+      run(
+        this.__parentNode,
+        'insertBefore',
+        this.wrapper,
+        this.__placeholderNode
+      )
+      run(this.__parentNode, 'removeChild', this.__placeholderNode)
+    } catch (err) {
+      // nothing
+    }
+  }
+
+  ejectDOM = () => {
+    try {
+      const parentNode = get(this.wrapper, 'parentNode')
+      this.__parentNode = parentNode
+
+      run(
+        this.__parentNode,
+        'insertBefore',
+        this.__placeholderNode,
+        this.wrapper
+      )
+      run(this.__parentNode, 'removeChild', this.wrapper)
+    } catch (err) {
+      // nothing
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
     if (!prevState.cached || !this.state.cached) {
       return
     }
 
     if (prevState.matched === true && this.state.matched === false) {
       if (this.props.unmount) {
-        const parentNode = get(this.wrapper, 'parentNode')
-        this.__parentNode = parentNode
-
-        run(
-          this.__parentNode,
-          'insertBefore',
-          this.__placeholderNode,
-          this.wrapper
-        )
-        run(this.__parentNode, 'removeChild', this.wrapper)
+        this.ejectDOM()
       }
       this.__cacheUpdateTime = Date.now()
       return run(this, 'cacheLifecycles.__listener.didCache')
@@ -189,34 +229,62 @@ export default class CacheComponent extends Component {
       }
       this.__cacheUpdateTime = Date.now()
       return run(this, 'cacheLifecycles.__listener.didRecover')
-    }    
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (this.props.unmount) {
-      const willRecover =
-        this.state.matched === false && nextState.matched === true
-
-      if (willRecover) {
-        run(
-          this.__parentNode,
-          'insertBefore',
-          this.wrapper,
-          this.__placeholderNode
-        )
-        run(this.__parentNode, 'removeChild', this.__placeholderNode)
-      } else {
-        if (this.props.saveScrollPosition) {
-          this.__revertScrollPos = saveScrollPosition(this.wrapper)
-        }
-      }
-    }
-
-    return (
+    const willRecover =
+      this.state.matched === false && nextState.matched === true
+    const willDrop = this.state.cached === true && nextState.cached === false
+    const shouldUpdate =
       this.state.matched ||
       nextState.matched ||
       this.state.cached !== nextState.cached
-    )
+
+    if (shouldUpdate) {
+      if ((this.props.unmount && willDrop) || willRecover) {
+        this.injectDOM()
+      }
+
+      if (!(willDrop || willRecover) && this.props.saveScrollPosition) {
+        this.__revertScrollPos = saveScrollPosition(
+          this.props.unmount ? this.wrapper : undefined
+        )
+      }
+    }
+
+    return shouldUpdate
+  }
+
+  componentWillUnmount() {
+    const { cacheKey: cacheKeyConfig, unmount } = this.props
+
+    if (get(cacheKeyConfig, 'multiple')) {
+      const { cacheKey, pathname } = cacheKeyConfig
+      const cache = { ...manager.getCache()[cacheKey] }
+
+      delete cache[pathname]
+
+      if (Object.keys(cache).length === 0) {
+        manager.remove(cacheKey)
+      } else {
+        manager.register(cacheKey, cache)
+      }
+    } else {
+      manager.remove(cacheKeyConfig)
+    }
+
+    if (unmount) {
+      this.injectDOM()
+    }
+  }
+
+  reset = () => {
+    delete this.__revertScrollPos
+
+    this.setState({
+      cached: false
+    })
   }
 
   render() {

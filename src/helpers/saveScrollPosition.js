@@ -1,51 +1,52 @@
-import { isArray } from './is'
+import root from './base/globalThis'
+import { get, run, value } from './base/try'
+import { isArray, isFunction, isExist } from './base/is'
+import { flatten } from './utils'
 
-const flatten = array =>
-  array.reduce(
-    (res, item) => [...res, ...(isArray(item) ? flatten(item) : [item])],
-    []
+const body = get(root, 'document.body')
+
+function isScrollableNode(node = {}) {
+  // if (!isExist(node)) {
+  //   return false
+  // }
+
+  return (
+    node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight
   )
-
-const checkStyleList = ['overflow', 'overflow-x', 'overflow-y']
-const scrollableStyleValue = ['auto', 'scroll']
-
-function getScrollableNodes(from = document) {
-  return [...from.querySelectorAll('*'), from].filter(node => {
-    const styles = getComputedStyle(node)
-
-    return (
-      (!node.saving && // 过滤已经进入保存状态的 DOM 以节约性能
-        (checkStyleList.some(style =>
-          scrollableStyleValue.includes(styles[style])
-        ) &&
-          node.scrollWidth > node.offsetWidth)) ||
-      node.scrollHeight > node.offsetHeight
-    )
-  })
 }
 
-export default function saveScrollPosition(from = document) {
-  const nodes = flatten(
-    (!isArray(from) ? [from] : from).map(getScrollableNodes)
-  )
-  const saver = nodes.map(node => {
-    node.saving = true
+function getScrollableNodes(from) {
+  if (!isFunction(get(root, 'document.getElementById'))) {
+    return []
+  }
 
-    return [
-      node,
-      {
-        x: node.scrollLeft,
-        y: node.scrollTop
-      }
-    ]
-  })
+  return [...value(run(from, 'querySelectorAll', '*'), []), from].filter(
+    isScrollableNode
+  )
+}
+
+export default function saveScrollPosition(from) {
+  const nodes = [
+    ...new Set([
+      ...flatten((!isArray(from) ? [from] : from).map(getScrollableNodes)),
+      ...[get(root, 'document.documentElement', {}), body].filter(
+        isScrollableNode
+      )
+    ])
+  ]
+
+  const saver = nodes.map(node => [
+    node,
+    {
+      x: node.scrollLeft,
+      y: node.scrollTop
+    }
+  ])
 
   return function revert() {
     saver.forEach(([node, { x, y }]) => {
       node.scrollLeft = x
       node.scrollTop = y
-
-      delete node.saving
     })
   }
 }

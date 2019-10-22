@@ -1,6 +1,6 @@
 import React, { PropTypes, Fragment } from 'react'
 
-import { isExist } from '../helpers/is'
+import { isExist } from '../helpers'
 
 function getFragment() {
   if (isExist(Fragment)) {
