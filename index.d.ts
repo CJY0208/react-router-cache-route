@@ -1,18 +1,12 @@
 /// <reference types="react" />
 /// <reference types="react-router" />
 import * as React from 'react'
-import { Switch, SwitchProps, RouteProps } from 'react-router-dom'
-
-export enum When {
-  FORWARD = 'forward',
-  BACK = 'back',
-  ALWAYS = 'always'
-}
+import { SwitchProps, RouteProps } from 'react-router-dom'
 
 export interface CacheRouteProps extends RouteProps {
   className?: string
-  when?: When | ((props: CacheRouteProps) => boolean)
-  behavior?: (cached) => object | void
+  when?: 'forward' | 'back' | 'always' | ((props: CacheRouteProps) => boolean)
+  behavior?: (isCached: boolean) => object | void
   cacheKey?: string
   unmount?: boolean
   saveScrollPosition?: boolean
@@ -26,7 +20,7 @@ export interface CacheSwitchProps extends SwitchProps {
   which?: (element: React.ElementType) => boolean
 }
 
-export declare class CacheSwitch extends Switch<CacheSwitchProps> {}
+export declare class CacheSwitch extends React.Component<CacheSwitchProps> {}
 
 export function dropByCacheKey(cacheKey: string): void
 export function getCachingKeys(): Array<string>
