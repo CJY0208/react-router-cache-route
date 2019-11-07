@@ -4,7 +4,7 @@ import { Route } from 'react-router-dom'
 
 import CacheComponent, { isMatch } from '../core/CacheComponent'
 import Updatable from '../core/Updatable'
-import { run, get, isExist, isNumber, clamp } from '../helpers'
+import { run, isExist, isNumber, clamp } from '../helpers'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)

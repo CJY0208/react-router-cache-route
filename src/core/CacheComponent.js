@@ -11,8 +11,7 @@ import {
 } from '../helpers'
 import * as manager from './manager'
 
-const __isUsingNewLifecycle =
-  Number(get(run(React, 'version.match', /^\d*\.\d*/), [0])) >= 16.3
+const isUsingNewLifecycle = isExist(React.forwardRef)
 
 export const COMPUTED_UNMATCH_KEY = '__isComputedUnmatch'
 export const isMatch = match =>
@@ -161,7 +160,7 @@ export default class CacheComponent extends Component {
    * New lifecycle for replacing the `componentWillReceiveProps` in React 16.3 +
    * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
    */
-  static getDerivedStateFromProps = __isUsingNewLifecycle
+  static getDerivedStateFromProps = isUsingNewLifecycle
     ? getDerivedStateFromProps
     : undefined
 
@@ -169,7 +168,7 @@ export default class CacheComponent extends Component {
    * Compatible React 16.3 -
    * 兼容 React 16.3 - 版本
    */
-  componentWillReceiveProps = !__isUsingNewLifecycle
+  componentWillReceiveProps = !isUsingNewLifecycle
     ? nextProps => {
         const nextState = getDerivedStateFromProps(nextProps, this.state)
 

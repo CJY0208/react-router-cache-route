@@ -278,6 +278,7 @@
   };
 
   var body = get(globalThis, 'document.body');
+  var screenScrollingElement = get(globalThis, 'document.scrollingElement', get(globalThis, 'document.documentElement', {}));
 
   function isScrollableNode() {
     var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -298,7 +299,7 @@
   }
 
   function saveScrollPosition(from) {
-    var nodes = [].concat(toConsumableArray(new Set([].concat(toConsumableArray(flatten((!isArray(from) ? [from] : from).map(getScrollableNodes))), toConsumableArray([get(globalThis, 'document.documentElement', {}), body].filter(isScrollableNode))))));
+    var nodes = [].concat(toConsumableArray(new Set([].concat(toConsumableArray(flatten((!isArray(from) ? [from] : from).map(getScrollableNodes))), toConsumableArray([screenScrollingElement, body].filter(isScrollableNode))))));
 
     var saver = nodes.map(function (node) {
       return [node, {
@@ -398,7 +399,7 @@
     }, {});
   };
 
-  var __isUsingNewLifecycle = Number(get(run(React__default, 'version.match', /^\d*\.\d*/), [0])) >= 16.3;
+  var isUsingNewLifecycle = isExist(React__default.forwardRef);
 
   var COMPUTED_UNMATCH_KEY = '__isComputedUnmatch';
   var isMatch = function isMatch(match) {
@@ -499,7 +500,7 @@
          * React 16.3 + 版本中替代 componentWillReceiveProps 的新生命周期
          */
       };
-      _this.componentWillReceiveProps = !__isUsingNewLifecycle ? function (nextProps) {
+      _this.componentWillReceiveProps = !isUsingNewLifecycle ? function (nextProps) {
         var nextState = getDerivedStateFromProps(nextProps, _this.state);
 
         _this.setState(nextState);
@@ -696,7 +697,7 @@
       } : undefined;
     }
   };
-  CacheComponent.getDerivedStateFromProps = __isUsingNewLifecycle ? getDerivedStateFromProps : undefined;
+  CacheComponent.getDerivedStateFromProps = isUsingNewLifecycle ? getDerivedStateFromProps : undefined;
 
   var Updatable = function (_Component) {
     inherits(Updatable, _Component);
@@ -972,7 +973,7 @@
           var _location = _this.props.location || route.location;
 
           return {
-            location: _this.props.location || route.location,
+            location: _location,
             match: route.match
           };
         }
@@ -1064,7 +1065,7 @@
 
   CacheSwitch.defaultProps = {
     which: function which(element) {
-      return value(get(element, 'type.componentName'), get(element, 'type.displayName')) === 'CacheRoute';
+      return get(element, 'type') === CacheRoute;
     }
   };
 
