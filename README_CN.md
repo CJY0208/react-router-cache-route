@@ -86,7 +86,7 @@ export default App
 | className                     | `String`              | -                                                              | 作用于包裹容器上的样式类名                                                                                |
 | behavior                      | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | 返回一个作用于包裹容器的 `props`，控制包裹容器的渲染方式                                                  |
 | cacheKey                      | `String`              | -                                                              | 增加此属性用于命令式控制缓存                                                                              |
-| multiple （React v16.3+）     | `Boolean` / `Number`  | `false`                                                        | 允许按动态路由参数区分不同缓存，值为数字时表示最大缓存份数，超出最大值时将清除最早更新的缓存              |
+| multiple （React v16.2+）     | `Boolean` / `Number`  | `false`                                                        | 允许按动态路由参数区分不同缓存，值为数字时表示最大缓存份数，超出最大值时将清除最早更新的缓存              |
 | unmount （实验性）            | `Boolean`             | `false`                                                        | 缓存时是否卸载 dom 节点，用于节约性能（单独使用将导致恢复时滚动位置丢失，可配合 saveScrollPosition 修复） |
 | saveScrollPosition （实验性） | `Boolean`             | `false`                                                        | 用以保存滚动位置                                                                                          |
 
@@ -105,6 +105,14 @@ export default App
 - **[always]** 离开时一律缓存路由，无论前进或者后退
 
 类型为 `Function` 时，将接受组件的 `props` 作为第一参数，返回 `true/false` 决定是否缓存
+
+---
+
+## CacheSwitch 属性说明
+
+| 名称  | 类型       | 默认值                                   | 描述                                                                                                                                                                                                                                                            |
+| ----- | ---------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| which | `Function` | `element => element.type === CacheRoute` | `<CacheSwitch>` 默认只保存第一层子节点中类型为 `CacheRoute` 的节点, `which` 属性是一个将获得待渲染 React 节点实例的方法, 通过返回 `true/false` 来决定 `<CacheSwitch>` 是否需要保存它，参考 [#55](https://github.com/CJY0208/react-router-cache-route/issues/55) |
 
 ---
 
