@@ -283,9 +283,9 @@
   function isScrollableNode() {
     var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    // if (!isExist(node)) {
-    //   return false
-    // }
+    if (!isExist(node)) {
+      return false;
+    }
 
     return node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight;
   }
@@ -352,7 +352,7 @@
   };
 
   var dropByCacheKey = function dropByCacheKey(key) {
-    var cache = get(__components, key);
+    var cache = get(__components, [key]);
 
     if (!cache) {
       return;

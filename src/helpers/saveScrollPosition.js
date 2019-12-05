@@ -11,9 +11,9 @@ const screenScrollingElement = get(
 )
 
 function isScrollableNode(node = {}) {
-  // if (!isExist(node)) {
-  //   return false
-  // }
+  if (!isExist(node)) {
+    return false
+  }
 
   return (
     node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight
