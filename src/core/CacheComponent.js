@@ -81,6 +81,8 @@ const getDerivedStateFromProps = (nextProps, prevState) => {
 }
 
 export default class CacheComponent extends Component {
+  static __name = 'CacheComponent'
+
   static propsTypes = {
     history: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
@@ -115,28 +117,22 @@ export default class CacheComponent extends Component {
     this.__cacheCreateTime = Date.now()
     this.__cacheUpdateTime = this.__cacheCreateTime
     if (props.cacheKey) {
-      if (get(props.cacheKey, 'multiple')) {
-        const { cacheKey, pathname } = props.cacheKey
+      const cacheKey = run(props.cacheKey, undefined, props)
+      if (props.multiple) {
+        const { pathname } = props
         manager.register(cacheKey, {
           ...manager.getCache()[cacheKey],
           [pathname]: this
         })
       } else {
-        manager.register(props.cacheKey, this)
+        manager.register(cacheKey, this)
       }
     }
 
     if (typeof document !== 'undefined') {
+      const cacheKey = run(props.cacheKey, undefined, props)
       this.__placeholderNode = document.createComment(
-        ` Route cached ${
-          props.cacheKey
-            ? `with cacheKey: "${get(
-                props.cacheKey,
-                'cacheKey',
-                props.cacheKey
-              )}" `
-            : ''
-        }`
+        ` Route cached ${cacheKey ? `with cacheKey: "${cacheKey}" ` : ''}`
       )
     }
 
@@ -256,10 +252,10 @@ export default class CacheComponent extends Component {
   }
 
   componentWillUnmount() {
-    const { cacheKey: cacheKeyConfig, unmount } = this.props
+    const { unmount, pathname, multiple } = this.props
+    const cacheKey = run(this.props, 'cacheKey', this.props)
 
-    if (get(cacheKeyConfig, 'multiple')) {
-      const { cacheKey, pathname } = cacheKeyConfig
+    if (multiple) {
       const cache = { ...manager.getCache()[cacheKey] }
 
       delete cache[pathname]
@@ -270,7 +266,7 @@ export default class CacheComponent extends Component {
         manager.register(cacheKey, cache)
       }
     } else {
-      manager.remove(cacheKeyConfig)
+      manager.remove(cacheKey)
     }
 
     if (unmount) {

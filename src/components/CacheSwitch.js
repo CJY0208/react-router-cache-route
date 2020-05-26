@@ -4,6 +4,7 @@ import {
   Switch,
   matchPath,
   withRouter,
+  useHistory,
   __RouterContext
 } from 'react-router-dom'
 
@@ -11,9 +12,8 @@ import { COMPUTED_UNMATCH_KEY, isMatch } from '../core/CacheComponent'
 import Updatable from '../core/Updatable'
 import SwitchFragment from './SwitchFragment'
 import { get, isNull, isExist } from '../helpers'
-import CacheRoute from './CacheRoute'
 
-const isUsingNewContext = isExist(__RouterContext)
+const isUsingNewContext = isExist(__RouterContext) || isExist(useHistory)
 
 class CacheSwitch extends Switch {
   getContext = () => {
@@ -51,15 +51,15 @@ class CacheSwitch extends Switch {
               const match = __matchedAlready
                 ? null
                 : path
-                ? matchPath(
-                    location.pathname,
-                    {
-                      ...element.props,
-                      path
-                    },
-                    contextMatch
-                  )
-                : contextMatch
+                  ? matchPath(
+                      location.pathname,
+                      {
+                        ...element.props,
+                        path
+                      },
+                      contextMatch
+                    )
+                  : contextMatch
 
               let child
 
@@ -132,7 +132,7 @@ if (isUsingNewContext) {
 }
 
 CacheSwitch.defaultProps = {
-  which: element => get(element, 'type') === CacheRoute
+  which: element => get(element, 'type.__name') === 'CacheRoute'
 }
 
 export default CacheSwitch

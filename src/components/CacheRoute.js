@@ -10,7 +10,7 @@ const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)
 
 export default class CacheRoute extends Component {
-  static componentName = 'CacheRoute'
+  static __name = 'CacheRoute'
 
   static propTypes = {
     component: PropTypes.elementType || PropTypes.any,
@@ -128,13 +128,9 @@ export default class CacheRoute extends Component {
                     {render({
                       ...props,
                       ...configProps,
-                      cacheKey: cacheKey
-                        ? {
-                            cacheKey,
-                            pathname,
-                            multiple: true
-                          }
-                        : undefined,
+                      pathname,
+                      cacheKey,
+                      multiple: true,
                       key: pathname,
                       match: recomputedMatch
                     })}
@@ -143,7 +139,12 @@ export default class CacheRoute extends Component {
               })}
             </Fragment>
           ) : (
-            renderSingle({ ...props, ...configProps })
+            renderSingle({
+              ...props,
+              ...configProps,
+              pathname: currentPathname,
+              multiple: false
+            })
           )
         }}
       </Route>

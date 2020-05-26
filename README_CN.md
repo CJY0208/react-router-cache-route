@@ -85,7 +85,7 @@ export default App
 | when                          | `String` / `Function` | `"forward"`                                                    | 用以决定何时使用缓存功能                                                                                  |
 | className                     | `String`              | -                                                              | 作用于包裹容器上的样式类名                                                                                |
 | behavior                      | `Function`            | `cached => cached ? { style: { display: "none" }} : undefined` | 返回一个作用于包裹容器的 `props`，控制包裹容器的渲染方式                                                  |
-| cacheKey                      | `String`              | -                                                              | 增加此属性用于命令式控制缓存                                                                              |
+| cacheKey                      | `String` / `Function` | -                                                              | 增加此属性用于命令式控制缓存                                                                              |
 | multiple （React v16.2+）     | `Boolean` / `Number`  | `false`                                                        | 允许按动态路由参数区分不同缓存，值为数字时表示最大缓存份数，超出最大值时将清除最早更新的缓存              |
 | unmount （实验性）            | `Boolean`             | `false`                                                        | 缓存时是否卸载 dom 节点，用于节约性能（单独使用将导致恢复时滚动位置丢失，可配合 saveScrollPosition 修复） |
 | saveScrollPosition （实验性） | `Boolean`             | `false`                                                        | 用以保存滚动位置                                                                                          |

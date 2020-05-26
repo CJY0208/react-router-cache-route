@@ -7,8 +7,9 @@ export default [
     input: 'src/index.js',
     output: {
       name: 'CacheRoute',
-      file: 'dist/cacheRoute.js',
-      format: 'umd'
+      file: 'lib/index.js',
+      format: 'cjs',
+      sourcemap: true
     },
     external: [
       'react',
@@ -26,7 +27,7 @@ export default [
     input: 'src/index.js',
     output: {
       name: 'CacheRoute',
-      file: 'dist/cacheRoute.min.js',
+      file: 'lib/index.min.js',
       format: 'umd'
     },
     external: [
