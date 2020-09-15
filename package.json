@@ -11,7 +11,8 @@
     "react",
     "react-router",
     "cache",
-    "cache route"
+    "cache route",
+    "keep alive route"
   ],
   "author": "CJY0208",
   "license": "ISC",
