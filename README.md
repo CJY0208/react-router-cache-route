@@ -7,6 +7,8 @@ English | [中文说明](./README_CN.md)
 
 Route with cache for `react-router` like `keep-alive` in Vue.
 
+[Online Demo](https://codesandbox.io/s/cache-route-demo-2spfh)
+
 **If you want `<KeepAlive />` only, try [react-activation](https://github.com/CJY0208/react-activation)**
 
 **React v15+**
