@@ -10,7 +10,8 @@
     "keep-alive",
     "react",
     "react-router",
-    "cache"
+    "cache",
+    "cache route"
   ],
   "author": "CJY0208",
   "license": "ISC",
