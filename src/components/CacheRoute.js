@@ -126,7 +126,7 @@ export default class CacheRoute extends Component {
                   multipleCacheKey === currentPathname + currentSearch ? match || computedMatch : null
 
                 return (
-                  <Fragment key={pathname}>
+                  <Fragment key={multipleCacheKey}>
                     {render({
                       ...props,
                       ...configProps,
