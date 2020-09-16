@@ -13,35 +13,20 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@master
 
-    - name: Check if version has been updated
-      id: check
-      uses: EndBug/version-check@v1
-      with:
-        file-url: https://unpkg.com/react-router-cache-route/package.json
-        static-checking: localIsNew
-
-    - name: Log if version has been updated
-      # if: steps.check.outputs.changed == 'true'
-      run: 'echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
-
     - name: Set up Node.js
-      # if: steps.check.outputs.changed == 'true'
       uses: actions/setup-node@master
       with:
         node-version: 13.11.0
 
     - name: Install Dependencies
-      # if: steps.check.outputs.changed == 'true'
       uses: bahmutov/npm-install@v1
       with:
         args: install
 
     - name: Build
-      # if: steps.check.outputs.changed == 'true'
       run: 'sudo npm run build'
 
     - name: Publish
-      # if: steps.check.outputs.changed == 'true'
       uses: pascalgn/npm-publish-action@1.2.0
       with:
         commit_pattern: "^Release (\\S+)"
