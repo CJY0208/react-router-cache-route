@@ -17,7 +17,7 @@ jobs:
       id: check
       uses: EndBug/version-check@v1
       with:
-        file-url: https://unpkg.com/react-router-cache-route@1.9.1/package.json
+        file-url: https://unpkg.com/react-router-cache-route/package.json
         static-checking: localIsNew
 
     - name: Log if version has been updated
