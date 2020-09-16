@@ -7,11 +7,11 @@
     "build": "rollup --config"
   },
   "keywords": [
-    "keep alive",
-    "react",
-    "react router",
     "cache",
     "cache route",
+    "keep alive",
+    "react",
+    "react router",    
     "keep alive route",    
   ],
   "author": "CJY0208",
