@@ -121,12 +121,12 @@ export default class CacheRoute extends Component {
 
           return multiple ? (
             <Fragment>
-              {Object.entries(this.cache).map(([multipleCacheKey, { render, pathname }]) => {
+              {Object.entries(this.cache).map(([multipleCacheKey, { render, pathname, search }]) => {
                 const recomputedMatch =
                   multipleCacheKey === currentPathname + currentSearch ? match || computedMatch : null
 
                 return (
-                  <Fragment key={pathname}>
+                  <Fragment key={pathname + search}>
                     {render({
                       ...props,
                       ...configProps,
