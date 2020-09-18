@@ -138,7 +138,8 @@ export default class CacheComponent extends Component {
 
     this.state = getDerivedStateFromProps(props, {
       cached: false,
-      matched: false
+      matched: false,
+      key: Math.random()
     })
   }
 
@@ -282,8 +283,16 @@ export default class CacheComponent extends Component {
     })
   }
 
+  refresh = () => {
+    delete this.__revertScrollPos;
+
+    this.setState({
+      key: Math.random()
+    });
+  };
+
   render() {
-    const { matched, cached } = this.state
+    const { matched, cached, key } = this.state
     const { className: propsClassName = '', behavior, children } = this.props
     const { className: behaviorClassName = '', ...behaviorProps } = value(
       run(behavior, undefined, !matched),
@@ -294,6 +303,7 @@ export default class CacheComponent extends Component {
 
     return cached ? (
       <div
+        key={key}
         className={hasClassName ? className : undefined}
         {...behaviorProps}
         ref={wrapper => {
