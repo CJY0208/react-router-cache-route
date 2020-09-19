@@ -37,6 +37,22 @@ export const dropByCacheKey = key => {
   }
 }
 
+const refreshComponent = component => run(component, 'refresh');
+
+export const refreshByCacheKey = key => {
+  const cache = get(__components, [key]);
+
+  if (!cache) {
+    return;
+  }
+
+  if (cache instanceof CacheComponent) {
+    refreshComponent(cache);
+  } else {
+    Object.values(cache).forEach(refreshComponent);
+  }
+};
+
 export const clearCache = () => {
   getCachedComponentEntries().forEach(([key]) => dropByCacheKey(key))
 }
