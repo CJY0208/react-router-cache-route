@@ -9,7 +9,7 @@ const getImplementation = () => {
     return global
   }
 
-  return Function('return this')()
+  throw new Error('unable to locate global object')
 }
 
 const implementation = getImplementation()
