@@ -119,7 +119,32 @@ export default App
 
 ---
 
-## 额外的生命周期
+## 生命周期
+
+#### Hooks
+
+使用 `useDidCache` 和 `useDidRecover` 来对应 **被缓存** 和 **被恢复** 两种生命周期
+
+```javascript
+import { useDidCache, useDidRecover } from 'react-router-cache-route'
+
+export default function List() {
+
+  useDidCache(() => {
+    console.log('List cached')
+  })
+
+  useDidRecover(() => {
+    console.log('List recovered')
+  })
+
+  return (
+    // ...
+  )
+}
+```
+
+#### Class 组件
 
 使用 `CacheRoute` 的组件将会得到一个名为 `cacheLifecycles` 的属性，里面包含两个额外生命周期的注入函数 `didCache` 和 `didRecover`，分别在组件 **被缓存** 和 **被恢复** 时触发
 
@@ -168,4 +193,14 @@ console.log(getCachingKeys()) // 如果 `cacheKey` prop 为 'MyComponent' 的缓
 
 dropByCacheKey('MyComponent')
 ...
+```
+---
+## 清空缓存
+
+使用 `clearCache` 函数来清空缓存
+
+```js
+import { clearCache } from 'react-router-cache-route'
+
+clearCache()
 ```

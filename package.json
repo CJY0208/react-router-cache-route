@@ -37,5 +37,8 @@
     "rollup-plugin-babel": "^3.0.5",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-uglify": "^4.0.0"
+  },
+  "dependencies": {
+    "mini-create-react-context": "^0.4.1"
   }
 }

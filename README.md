@@ -119,6 +119,31 @@ When the type is `Function`, the component's `props` will be accepted as the fir
 
 ## Lifecycles
 
+### Hooks
+
+use `useDidCache` and `useDidRecover` to inject customer Lifecycle `didCache` and `didRecover`
+
+```javascript
+import { useDidCache, useDidRecover } from 'react-router-cache-route'
+
+export default function List() {
+
+  useDidCache(() => {
+    console.log('List cached')
+  })
+
+  useDidRecover(() => {
+    console.log('List recovered')
+  })
+
+  return (
+    // ...
+  )
+}
+```
+
+### Class Component
+
 Component with CacheRoute will accept one prop named `cacheLifecycles` which contains two functions to inject customer Lifecycle `didCache` and `didRecover`
 
 ```javascript
@@ -146,12 +171,11 @@ export default class List extends Component {
     )
   }
 }
-
 ```
 
 ---
 
-## Drop cache manually
+## Drop cache
 
 You can manually control the cache with `cacheKey` prop and `dropByCacheKey` function.
 
@@ -167,4 +191,14 @@ console.log(getCachingKeys()) // will receive ['MyComponent'] if CacheRoute is c
 
 dropByCacheKey('MyComponent')
 ...
+```
+---
+## Clear cache
+
+You can clear cache with `clearCache` function.
+
+```js
+import { clearCache } from 'react-router-cache-route'
+
+clearCache()
 ```

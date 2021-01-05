@@ -10,6 +10,7 @@ import {
   saveScrollPosition
 } from '../helpers'
 import * as manager from './manager'
+import { Provider as CacheRouteProvider } from './context'
 
 const isUsingNewLifecycle = isExist(React.forwardRef)
 
@@ -310,7 +311,9 @@ export default class CacheComponent extends Component {
           this.wrapper = wrapper
         }}
       >
-        {run(children, undefined, this.cacheLifecycles)}
+        <CacheRouteProvider value={this.cacheLifecycles}>
+          {run(children, undefined, this.cacheLifecycles)}
+        </CacheRouteProvider>
       </div>
     ) : null
   }

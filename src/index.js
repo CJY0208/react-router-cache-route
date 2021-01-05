@@ -8,3 +8,4 @@ export {
   clearCache,
   getCachingComponents
 } from './core/manager'
+export { useDidCache, useDidRecover } from './core/context'

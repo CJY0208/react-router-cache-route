@@ -14,7 +14,8 @@ export default [
     external: [
       'react',
       'prop-types',
-      'react-router-dom'
+      'react-router-dom',
+      'mini-create-react-context',
     ],
     plugins: [
       resolve(),
@@ -33,7 +34,8 @@ export default [
     external: [
       'react',
       'prop-types',
-      'react-router-dom'
+      'react-router-dom',
+      'mini-create-react-context',
     ],
     plugins: [
       resolve(),
