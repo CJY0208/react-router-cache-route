@@ -131,7 +131,12 @@ import { useDidCache, useDidRecover } from 'react-router-cache-route'
 export default function List() {
 
   useDidCache(() => {
-    console.log('List cached')
+    console.log('List cached 1')
+  })
+
+  // support multiple effect
+  useDidCache(() => {
+    console.log('List cached 2')
   })
 
   useDidRecover(() => {
