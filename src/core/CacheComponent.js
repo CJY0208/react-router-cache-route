@@ -7,7 +7,8 @@ import {
   value,
   isExist,
   isFunction,
-  saveScrollPosition
+  saveScrollPosition,
+  ObjectValues
 } from '../helpers'
 import * as manager from './manager'
 import { Provider as CacheRouteProvider } from './context'
@@ -146,6 +147,17 @@ export default class CacheComponent extends Component {
 
   cacheLifecycles = {
     __listener: {},
+    __didCacheListener: {},
+    __didRecoverListener: {},
+    on: (eventName, func) => {
+      const id = Math.random()
+      const listenerKey = `__${eventName}Listener`
+      this.cacheLifecycles[listenerKey][id] = func
+
+      return () => {
+        delete this.cacheLifecycles[listenerKey][id]
+      }
+    },
     didCache: listener => {
       this.cacheLifecycles.__listener['didCache'] = listener
     },
@@ -217,6 +229,9 @@ export default class CacheComponent extends Component {
         this.ejectDOM()
       }
       this.__cacheUpdateTime = Date.now()
+      ObjectValues(this.cacheLifecycles.__didCacheListener).forEach(func => {
+        run(func)
+      })
       return run(this, 'cacheLifecycles.__listener.didCache')
     }
 
@@ -225,6 +240,9 @@ export default class CacheComponent extends Component {
         run(this.__revertScrollPos)
       }
       this.__cacheUpdateTime = Date.now()
+      ObjectValues(this.cacheLifecycles.__didRecoverListener).forEach(func => {
+        run(func)
+      })
       return run(this, 'cacheLifecycles.__listener.didRecover')
     }
   }

@@ -25,3 +25,11 @@ export const clamp = (value, min, max = Number.MAX_VALUE) => {
 
   return value
 }
+
+export const ObjectValues = (object) => {
+  const res = []
+  for (let key in object) {
+    res.push(object[key])
+  }
+  return res
+}
