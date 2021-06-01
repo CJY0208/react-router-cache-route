@@ -23,7 +23,7 @@ export const remove = key => {
 
 const dropComponent = component => run(component, 'reset')
 
-export const dropByCacheKey = key => {
+export const dropByCacheKey = (key, callBack) => {
   const cache = get(__components, [key])
 
   if (!cache) {
@@ -31,9 +31,9 @@ export const dropByCacheKey = key => {
   }
 
   if (cache instanceof CacheComponent) {
-    dropComponent(cache)
+    return dropComponent(cache, callBack)
   } else {
-    Object.values(cache).forEach(dropComponent)
+    return Promise.all(Object.values(cache).forEach(dropComponent))
   }
 }
 
@@ -47,14 +47,14 @@ export const refreshByCacheKey = key => {
   }
 
   if (cache instanceof CacheComponent) {
-    refreshComponent(cache);
+    return refreshComponent(cache);
   } else {
-    Object.values(cache).forEach(refreshComponent);
+    return Promise.all(Object.values(cache).map(refreshComponent));
   }
 };
 
 export const clearCache = () => {
-  getCachedComponentEntries().forEach(([key]) => dropByCacheKey(key))
+  return Promise.all(getCachedComponentEntries().map(([key]) => dropByCacheKey(key)))
 }
 
 export const getCachingKeys = () =>
