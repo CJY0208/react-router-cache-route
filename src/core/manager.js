@@ -21,17 +21,16 @@ export const remove = key => {
   delete __components[key]
 }
 
-const dropComponent = component => run(component, 'reset')
+const dropComponent = (component) => run(component, 'reset')
 
-export const dropByCacheKey = (key, callBack) => {
+export const dropByCacheKey = (key) => {
   const cache = get(__components, [key])
-
   if (!cache) {
     return
   }
 
   if (cache instanceof CacheComponent) {
-    return dropComponent(cache, callBack)
+    return dropComponent(cache)
   } else {
     return Promise.all(Object.values(cache).forEach(dropComponent))
   }
