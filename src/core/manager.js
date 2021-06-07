@@ -21,9 +21,9 @@ export const remove = key => {
   delete __components[key]
 }
 
-const dropComponent = (component) => run(component, 'reset')
+const dropComponent = component => run(component, 'reset')
 
-export const dropByCacheKey = (key) => {
+export const dropByCacheKey = key => {
   const cache = get(__components, [key])
   if (!cache) {
     return
