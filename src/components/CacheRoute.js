@@ -102,7 +102,7 @@ export default class CacheRoute extends Component {
             </CacheComponent>
           )
 
-          const cacheBust = currentState?.cacheBust
+          const cacheBust = (currentState && currentState.cacheBust) || ''
           let localCacheKey = currentPathname + currentSearch
           if (cacheBust) {
             localCacheKey += cacheBust
