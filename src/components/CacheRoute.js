@@ -73,7 +73,7 @@ export default class CacheRoute extends Component {
         {props => {
           const { match, computedMatch, location } = props
           const isMatchCurrentRoute = isMatch(props.match)
-          const { pathname: currentPathname, search: currentSearch } = location
+          const { pathname: currentPathname, search: currentSearch, state: currentState } = location
           const maxMultipleCount = isNumber(multiple) ? multiple : Infinity
           const configProps = {
             when,
@@ -102,8 +102,14 @@ export default class CacheRoute extends Component {
             </CacheComponent>
           )
 
+          const cacheBust = currentState?.cacheBust
+          let localCacheKey = currentPathname + currentSearch
+          if (cacheBust) {
+            localCacheKey += cacheBust
+          }
+
           if (multiple && isMatchCurrentRoute) {
-            this.cache[currentPathname + currentSearch] = {
+            this.cache[localCacheKey] = {
               updateTime: Date.now(),
               pathname: currentPathname,
               search: currentSearch,
@@ -123,7 +129,7 @@ export default class CacheRoute extends Component {
             <Fragment>
               {Object.entries(this.cache).map(([multipleCacheKey, { render, pathname }]) => {
                 const recomputedMatch =
-                  multipleCacheKey === currentPathname + currentSearch ? match || computedMatch : null
+                  multipleCacheKey === localCacheKey ? match || computedMatch : null
 
                 return (
                   <Fragment key={multipleCacheKey}>
