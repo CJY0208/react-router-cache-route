@@ -35,5 +35,5 @@ export interface CachingComponentMap {
   [key: string]: CachingComponent
 }
 export function getCachingComponents(): CachingComponentMap
-export function useDidCache(effect: () => void): void
-export function useDidRecover(effect: () => void): void
+export function useDidCache(effect: () => void, deps?: any[]): void
+export function useDidRecover(effect: () => void, deps?: any[]): void
