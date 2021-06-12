@@ -22,10 +22,10 @@ export interface CacheSwitchProps extends SwitchProps {
 
 export declare class CacheSwitch extends React.Component<CacheSwitchProps> {}
 
-export function dropByCacheKey(cacheKey: string): void
-export function refreshByCacheKey(cacheKey: string): void
+export function dropByCacheKey(cacheKey: string): Promise
+export function refreshByCacheKey(cacheKey: string): Promise
 export function getCachingKeys(): Array<string>
-export function clearCache(): void
+export function clearCache(): Promise
 
 export interface CachingComponent extends React.ComponentClass {
   __cacheCreateTime: number
