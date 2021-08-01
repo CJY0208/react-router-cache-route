@@ -8,7 +8,7 @@ const context = createContext()
 export default context
 export const { Provider, Consumer } = context
 
-function useCacheRoute(lifecycleName, effect) {
+function useCacheRoute(lifecycleName, effect, deps = []) {
   if (!isFunction(useContext)) {
     return
   }
@@ -18,7 +18,7 @@ function useCacheRoute(lifecycleName, effect) {
     const off = run(cacheLifecycles, 'on', lifecycleName, effect)
 
     return () => run(off)
-  }, [])
+  }, deps)
 }
 export const useDidCache = useCacheRoute.bind(null, 'didCache')
 export const useDidRecover = useCacheRoute.bind(null, 'didRecover')

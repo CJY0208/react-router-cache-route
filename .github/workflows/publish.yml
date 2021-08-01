@@ -15,10 +15,13 @@ jobs:
 
     - name: Check if version has been updated
       id: check
-      uses: EndBug/version-check@master
+      uses: EndBug/version-check@v1
       with:
         file-url: https://unpkg.com/react-router-cache-route/package.json
         static-checking: localIsNew
+    
+    - name: Output version check result
+      run: 'echo "changed: ${{ steps.check.outputs.changed }}, version: ${{ steps.check.outputs.version }}"'
 
     - name: Log if version has been updated
       if: steps.check.outputs.changed == 'true'
