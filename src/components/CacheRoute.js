@@ -9,7 +9,6 @@ import { run, isExist, isNumber, clamp, generateCacheBust } from '../helpers'
 const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)
 
-
 export default class CacheRoute extends Component {
   static __name = 'CacheRoute'
 
