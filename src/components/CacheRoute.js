@@ -4,7 +4,7 @@ import { Route } from 'react-router-dom'
 
 import CacheComponent, { isMatch } from '../core/CacheComponent'
 import Updatable from '../core/Updatable'
-import { run, isExist, isNumber, clamp, generateCacheBust } from '../helpers'
+import { run, isExist, isNumber, clamp } from '../helpers'
 
 const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)
@@ -101,11 +101,13 @@ export default class CacheRoute extends Component {
               )}
             </CacheComponent>
           )
-
-          const cacheBust = (currentState && currentState.cacheBust) || generateCacheBust()
-          const localCacheKey = currentPathname + currentSearch + cacheBust
-
-
+          
+          const cacheBust = (currentState && currentState.cacheBust) || ''
+          let localCacheKey = currentPathname + currentSearch
+          if (cacheBust) {
+            localCacheKey += cacheBust
+          }
+          
           if (multiple && isMatchCurrentRoute) {
             this.cache[localCacheKey] = {
               updateTime: Date.now(),

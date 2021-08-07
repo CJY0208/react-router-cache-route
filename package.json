@@ -40,7 +40,6 @@
     "rollup-plugin-uglify": "^4.0.0"
   },
   "dependencies": {
-    "mini-create-react-context": "^0.4.1",
-    "uuid": "^8.3.2"
+    "mini-create-react-context": "^0.4.1"
   }
 }

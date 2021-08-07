@@ -34,12 +34,3 @@ export const ObjectValues = (object) => {
   }
   return res
 }
-
-/*
- * For cached routes, we want to mount a new page every time we transition.
- * We create a cacheBust and pass it into the route's state. Our CacheRoute component then uses the cacheBust identifier
- * To know whether to fetch an already cached component or a brand new one
- */
-export const generateCacheBust  = () => {
-  return uuid().slice(0, 8)
-}
