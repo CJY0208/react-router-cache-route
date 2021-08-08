@@ -109,8 +109,6 @@ export default class CacheRoute extends Component {
           }
           
           if (multiple && isMatchCurrentRoute) {
-            console.log(`localCacheKey: ${localCacheKey}`)
-            console.log(`cache: ${this.cache}`)
             this.cache[localCacheKey] = {
               updateTime: Date.now(),
               pathname: currentPathname,
