@@ -267,13 +267,13 @@ export default class CacheComponent extends Component {
         this.injectDOM()
       }
 
-      if (!(willDrop || willRecover)) {
-        this.yPosition = window.scrollY
+      const shouldSaveScrollPosition = !(willDrop || willRecover)
+
+      if (shouldSaveScrollPosition) {
+        this.yPosition = window.pageYOffset
       }
 
-      if (!(willDrop || willRecover) && this.props.saveScrollPosition) {
-
-
+      if (shouldSaveScrollPosition && this.props.saveScrollPosition) {
         this.__revertScrollPos = saveScrollPosition(
           this.props.unmount ? this.wrapper : undefined
         )

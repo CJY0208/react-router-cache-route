@@ -28,7 +28,6 @@ export default class CacheRoute extends Component {
 
   cache = {}
 
-
   render() {
     let {
       children,
