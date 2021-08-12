@@ -9,6 +9,9 @@ import { run, isExist, isNumber, clamp } from '../helpers'
 const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)
 
+
+let counter = 0
+
 export default class CacheRoute extends Component {
   static __name = 'CacheRoute'
 
@@ -25,6 +28,7 @@ export default class CacheRoute extends Component {
   }
 
   cache = {}
+
 
   render() {
     let {
@@ -73,7 +77,7 @@ export default class CacheRoute extends Component {
         {props => {
           const { match, computedMatch, location } = props
           const isMatchCurrentRoute = isMatch(props.match)
-          const { pathname: currentPathname, search: currentSearch } = location
+          const { pathname: currentPathname, search: currentSearch, state: currentState } = location
           const maxMultipleCount = isNumber(multiple) ? multiple : Infinity
           const configProps = {
             when,
@@ -102,13 +106,22 @@ export default class CacheRoute extends Component {
             </CacheComponent>
           )
 
+
+          const routeId = (currentState && currentState.routeId)
+          let localCacheKey = currentPathname + currentSearch
+
           if (multiple && isMatchCurrentRoute) {
-            this.cache[currentPathname + currentSearch] = {
+            if (routeId) {
+              localCacheKey += routeId
+            }
+
+            this.cache[localCacheKey] = {
               updateTime: Date.now(),
               pathname: currentPathname,
               search: currentSearch,
               render: renderSingle
             }
+
 
             Object.entries(this.cache)
               .sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
@@ -123,7 +136,7 @@ export default class CacheRoute extends Component {
             <Fragment>
               {Object.entries(this.cache).map(([multipleCacheKey, { render, pathname }]) => {
                 const recomputedMatch =
-                  multipleCacheKey === currentPathname + currentSearch ? match || computedMatch : null
+                  multipleCacheKey === localCacheKey ? match || computedMatch : null
 
                 return (
                   <Fragment key={multipleCacheKey}>
@@ -152,4 +165,16 @@ export default class CacheRoute extends Component {
       </Route>
     )
   }
+}
+
+export function cachedNavigation ({ history, locationObject, state, isNew }) {
+  if (!state) {
+    state = {}
+  }
+
+  if (isNew) {
+    Object.assign(state, { routeId: counter++ })
+  }
+
+  history.push(locationObject, state)
 }
