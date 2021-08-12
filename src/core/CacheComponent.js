@@ -231,7 +231,6 @@ export default class CacheComponent extends Component {
         this.ejectDOM()
       }
       this.__cacheUpdateTime = Date.now()
-
       ObjectValues(this.cacheLifecycles.__didCacheListener).forEach(func => {
         run(func)
       })
