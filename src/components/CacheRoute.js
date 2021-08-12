@@ -9,7 +9,6 @@ import { run, isExist, isNumber, clamp } from '../helpers'
 const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)
 
-
 let counter = 0
 
 export default class CacheRoute extends Component {
@@ -106,13 +105,17 @@ export default class CacheRoute extends Component {
             </CacheComponent>
           )
 
-
-          const routeId = (currentState && currentState.routeId)
           let localCacheKey = currentPathname + currentSearch
 
           if (multiple && isMatchCurrentRoute) {
+            const routeId = (currentState && currentState.routeId)
             if (routeId) {
               localCacheKey += routeId
+            } else {
+              const lastLocalCacheKey = getLastLocalCacheKey(this.cache)
+              if (lastLocalCacheKey) {
+                localCacheKey = lastLocalCacheKey
+              }
             }
 
             this.cache[localCacheKey] = {
@@ -121,7 +124,6 @@ export default class CacheRoute extends Component {
               search: currentSearch,
               render: renderSingle
             }
-
 
             Object.entries(this.cache)
               .sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
@@ -177,4 +179,14 @@ export function cachedNavigation ({ history, locationObject, state, isNew }) {
   }
 
   history.push(locationObject, state)
+}
+
+function getLastLocalCacheKey(cache) {
+  const cacheEntries = Object.entries(cache)
+  if (cacheEntries.length === 0) {
+    return null
+  }
+
+  const sortedCacheEntries = cacheEntries.sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
+  return sortedCacheEntries[sortedCacheEntries.length-1][0]
 }
