@@ -74,6 +74,7 @@ export default class CacheRoute extends Component {
        */
       <Route {...restProps}>
         {props => {
+          window.history.scrollRestoration = 'manual'
           const { match, computedMatch, location } = props
           const isMatchCurrentRoute = isMatch(props.match)
           const { pathname: currentPathname, search: currentSearch, state: currentState } = location
