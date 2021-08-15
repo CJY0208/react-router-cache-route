@@ -26,6 +26,7 @@ export function dropByCacheKey(cacheKey: string): void
 export function refreshByCacheKey(cacheKey: string): void
 export function getCachingKeys(): Array<string>
 export function clearCache(): void
+export function cachedNavigation(options: any): void
 
 export interface CachingComponent extends React.ComponentClass {
   __cacheCreateTime: number
@@ -37,3 +38,6 @@ export interface CachingComponentMap {
 export function getCachingComponents(): CachingComponentMap
 export function useDidCache(effect: () => void, deps?: any[]): void
 export function useDidRecover(effect: () => void, deps?: any[]): void
+export function useIsInCachedRecoveredPage(effect: () => void, deps?: any[]): void
+export function useIsInActivePage(effect: () => void, deps?: any[]): void
+
