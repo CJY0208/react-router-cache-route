@@ -9,6 +9,8 @@ import { run, isExist, isNumber, clamp } from '../helpers'
 const isEmptyChildren = children => React.Children.count(children) === 0
 const isFragmentable = isExist(Fragment)
 
+let counter = 0
+
 export default class CacheRoute extends Component {
   static __name = 'CacheRoute'
 
@@ -71,6 +73,7 @@ export default class CacheRoute extends Component {
        */
       <Route {...restProps}>
         {props => {
+          window.history.scrollRestoration = 'manual'
           const { match, computedMatch, location } = props
           const isMatchCurrentRoute = isMatch(props.match)
           const { pathname: currentPathname, search: currentSearch, state: currentState } = location
@@ -101,14 +104,20 @@ export default class CacheRoute extends Component {
               )}
             </CacheComponent>
           )
-          
-          const cacheBust = (currentState && currentState.cacheBust) || ''
+
           let localCacheKey = currentPathname + currentSearch
-          if (cacheBust) {
-            localCacheKey += cacheBust
-          }
-          
+
           if (multiple && isMatchCurrentRoute) {
+            const routeId = (currentState && currentState.routeId)
+            if (routeId) {
+              localCacheKey += routeId
+            } else {
+              const lastLocalCacheKey = getLastLocalCacheKey(this.cache)
+              if (lastLocalCacheKey) {
+                localCacheKey = lastLocalCacheKey
+              }
+            }
+
             this.cache[localCacheKey] = {
               updateTime: Date.now(),
               pathname: currentPathname,
@@ -158,4 +167,26 @@ export default class CacheRoute extends Component {
       </Route>
     )
   }
+}
+
+export function cachedNavigation ({ history, locationObject, state, isNew }) {
+  if (!state) {
+    state = {}
+  }
+
+  if (isNew) {
+    Object.assign(state, { routeId: counter++ })
+  }
+
+  history.push(locationObject, state)
+}
+
+function getLastLocalCacheKey(cache) {
+  const cacheEntries = Object.entries(cache)
+  if (cacheEntries.length === 0) {
+    return null
+  }
+
+  const sortedCacheEntries = cacheEntries.sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
+  return sortedCacheEntries[sortedCacheEntries.length-1][0]
 }

@@ -1,5 +1,4 @@
 import { isArray } from './base/is'
-import * as uuid from 'uuid/v4'
 
 export const nextTick = func => Promise.resolve().then(func)
 

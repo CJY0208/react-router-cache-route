@@ -85,6 +85,8 @@ const getDerivedStateFromProps = (nextProps, prevState) => {
 export default class CacheComponent extends Component {
   static __name = 'CacheComponent'
 
+  yPosition = 0
+
   static propsTypes = {
     history: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
@@ -106,10 +108,10 @@ export default class CacheComponent extends Component {
     behavior: cached =>
       cached
         ? {
-            style: {
-              display: 'none'
-            }
+          style: {
+            display: 'none'
           }
+        }
         : undefined
   }
 
@@ -180,10 +182,10 @@ export default class CacheComponent extends Component {
    */
   componentWillReceiveProps = !isUsingNewLifecycle
     ? nextProps => {
-        const nextState = getDerivedStateFromProps(nextProps, this.state)
+      const nextState = getDerivedStateFromProps(nextProps, this.state)
 
-        this.setState(nextState)
-      }
+      this.setState(nextState)
+    }
     : undefined
 
   __parentNode
@@ -240,6 +242,9 @@ export default class CacheComponent extends Component {
         run(this.__revertScrollPos)
       }
       this.__cacheUpdateTime = Date.now()
+
+      window.scrollTo(0, this.yPosition)
+
       ObjectValues(this.cacheLifecycles.__didRecoverListener).forEach(func => {
         run(func)
       })
@@ -261,7 +266,13 @@ export default class CacheComponent extends Component {
         this.injectDOM()
       }
 
-      if (!(willDrop || willRecover) && this.props.saveScrollPosition) {
+      const shouldSaveScrollPosition = !(willDrop || willRecover)
+
+      if (shouldSaveScrollPosition) {
+        this.yPosition = window.pageYOffset
+      }
+
+      if (shouldSaveScrollPosition && this.props.saveScrollPosition) {
         this.__revertScrollPos = saveScrollPosition(
           this.props.unmount ? this.wrapper : undefined
         )
