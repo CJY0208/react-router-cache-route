@@ -125,6 +125,8 @@ export default class CacheRoute extends Component {
               render: renderSingle
             }
 
+            console.log('cache', this.cache)
+
             Object.entries(this.cache)
               .sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
               .forEach(([pathname], idx) => {
