@@ -147,6 +147,10 @@ export default class CacheComponent extends Component {
     })
   }
 
+  componentDidMount () {
+    window.scrollTo(0,0)
+  }
+
   cacheLifecycles = {
     __listener: {},
     __didCacheListener: {},
