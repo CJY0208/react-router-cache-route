@@ -125,8 +125,6 @@ export default class CacheRoute extends Component {
               render: renderSingle
             }
 
-            console.log('cache', this.cache)
-
             Object.entries(this.cache)
               .sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
               .forEach(([pathname], idx) => {
@@ -171,7 +169,7 @@ export default class CacheRoute extends Component {
   }
 }
 
-export function cachedNavigation ({ history, locationObject, state, isNew }) {
+export function cachedNavigation ({ history, locationObject, state, isNew, method= 'push'}) {
   if (!state) {
     state = {}
   }
@@ -180,7 +178,8 @@ export function cachedNavigation ({ history, locationObject, state, isNew }) {
     Object.assign(state, { routeId: counter++ })
   }
 
-  history.push(locationObject, state)
+  const navigationFunction = method === 'push' ? history.push : history.replace
+  navigationFunction(locationObject, state)
 }
 
 function getLastLocalCacheKey(cache) {
