@@ -188,6 +188,6 @@ function getLastLocalCacheKey(cache) {
     return null
   }
 
-  const sortedCacheEntries = cacheEntries.sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
+  const sortedCacheEntries = cacheEntries.sort(([, prev], [, next]) => prev.updateTime - next.updateTime)
   return sortedCacheEntries[sortedCacheEntries.length-1][0]
 }
