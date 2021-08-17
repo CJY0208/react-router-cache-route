@@ -1,5 +1,5 @@
 {
-  "name": "react-router-cache-route",
+  "name": "@mixtiles/react-router-cache-route",
   "version": "1.11.1",
   "description": "cache-route for react-router base on react v15+ and router v4+",
   "main": "index.js",
@@ -17,10 +17,10 @@
   ],
   "author": "CJY0208",
   "license": "ISC",
-  "homepage": "https://github.com/CJY0208/react-router-cache-route",
+  "homepage": "https://github.com/mixtiles/react-router-cache-route",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CJY0208/react-router-cache-route.git"
+    "url": "git+https://github.com/mixtiles/react-router-cache-route.git"
   },
   "peerDependencies": {
     "prop-types": ">=15",

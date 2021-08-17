@@ -38,6 +38,6 @@ export interface CachingComponentMap {
 export function getCachingComponents(): CachingComponentMap
 export function useDidCache(effect: () => void, deps?: any[]): void
 export function useDidRecover(effect: () => void, deps?: any[]): void
-export function useIsInCachedRecoveredPage(effect: () => void, deps?: any[]): void
-export function useIsInActivePage(effect: () => void, deps?: any[]): void
+export function useIsInCachedRecoveredPage(): void
+export function useIsInActivePage(): void
 
