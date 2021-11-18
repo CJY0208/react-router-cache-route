@@ -14,7 +14,7 @@ export default class Updatable extends Component {
 
   shouldComponentUpdate = isSusSupported ? () => true : ({ when }) => when
   render = () => (
-    <Freeze Freeze={!this.props.when}>
+    <Freeze freeze={!this.props.when}>
       {run(this.props, 'children')}
     </Freeze>
   )
