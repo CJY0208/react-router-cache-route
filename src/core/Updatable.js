@@ -7,7 +7,7 @@ import { run, get } from '../helpers'
 const isSusSupported = !!Suspense
 const Freeze = isSusSupported ? ReactFreeze : ({ children }) => children
 
-export class Updatable extends Component {
+export default class Updatable extends Component {
   static propsTypes = {
     when: PropTypes.bool.isRequired
   }
