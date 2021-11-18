@@ -39,6 +39,7 @@
     "rollup-plugin-uglify": "^4.0.0"
   },
   "dependencies": {
-    "mini-create-react-context": "^0.4.1"
+    "mini-create-react-context": "^0.4.1",
+    "react-freeze": "^1.0.0"
   }
 }
