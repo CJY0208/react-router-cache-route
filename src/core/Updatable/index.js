@@ -1,5 +1,5 @@
 import React, { Component, Suspense } from 'react'
-import { Freeze as ReactFreeze } from './Freeze'
+import ReactFreeze from './Freeze'
 import PropTypes from 'prop-types'
 
 import { run, get } from '../../helpers'
