@@ -1,4 +1,4 @@
-import { useEffect, useContext } from 'react'
+import { useEffect, useContext, useRef } from 'react'
 import createContext from 'mini-create-react-context'
 
 import { isArray, isFunction, run } from '../helpers'
@@ -13,12 +13,17 @@ function useCacheRoute(lifecycleName, effect, deps = []) {
     return
   }
 
+  const effectRef = useRef(() => null)
+  effectRef.current = effect
+
   const cacheLifecycles = useContext(context)
   useEffect(() => {
-    const off = run(cacheLifecycles, 'on', lifecycleName, effect)
+    const off = run(cacheLifecycles, 'on', lifecycleName, () => {
+      run(effectRef.current)
+    })
 
     return () => run(off)
-  }, deps)
+  }, [])
 }
 export const useDidCache = useCacheRoute.bind(null, 'didCache')
 export const useDidRecover = useCacheRoute.bind(null, 'didRecover')
