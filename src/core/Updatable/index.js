@@ -33,7 +33,8 @@ export default class Updatable extends Component {
         })
       }, 1000)
     }
-    return when
+
+    return true
   }
   render = () => (
     <Freeze freeze={this.state.freeze}>
