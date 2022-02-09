@@ -37,7 +37,7 @@ export default class Updatable extends Component {
     return true
   }
   render = () => (
-    <Freeze freeze={this.state.freeze}>
+    <Freeze freeze={this.props.when ? false : this.state.freeze}>
       {run(this.props, 'children')}
     </Freeze>
   )
