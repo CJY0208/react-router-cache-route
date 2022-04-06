@@ -121,10 +121,10 @@ export default class CacheComponent extends Component {
     if (props.cacheKey) {
       const cacheKey = run(props.cacheKey, undefined, props)
       if (props.multiple) {
-        const { pathname } = props
+        const { href } = props
         manager.register(cacheKey, {
           ...manager.getCache()[cacheKey],
-          [pathname]: this
+          [href]: this
         })
       } else {
         manager.register(cacheKey, this)
@@ -272,13 +272,13 @@ export default class CacheComponent extends Component {
   }
 
   componentWillUnmount() {
-    const { unmount, pathname, multiple } = this.props
+    const { unmount, href, multiple } = this.props
     const cacheKey = run(this.props, 'cacheKey', this.props)
 
     if (multiple) {
       const cache = { ...manager.getCache()[cacheKey] }
 
-      delete cache[pathname]
+      delete cache[href]
 
       if (Object.keys(cache).length === 0) {
         manager.remove(cacheKey)

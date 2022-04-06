@@ -103,25 +103,25 @@ export default class CacheRoute extends Component {
           )
 
           if (multiple && isMatchCurrentRoute) {
-            this.cache[currentPathname + currentSearch] = {
+            const multipleCacheKey = currentPathname + currentSearch
+            this.cache[multipleCacheKey] = {
               updateTime: Date.now(),
-              pathname: currentPathname,
-              search: currentSearch,
+              href: multipleCacheKey,
               render: renderSingle
             }
 
             Object.entries(this.cache)
               .sort(([, prev], [, next]) => next.updateTime - prev.updateTime)
-              .forEach(([pathname], idx) => {
+              .forEach(([multipleCacheKey], idx) => {
                 if (idx >= maxMultipleCount) {
-                  delete this.cache[pathname]
+                  delete this.cache[multipleCacheKey]
                 }
               })
           }
 
           return multiple ? (
             <Fragment>
-              {Object.entries(this.cache).map(([multipleCacheKey, { render, pathname }]) => {
+              {Object.entries(this.cache).map(([multipleCacheKey, { render, href }]) => {
                 const recomputedMatch =
                   multipleCacheKey === currentPathname + currentSearch ? match || computedMatch : null
 
@@ -130,10 +130,10 @@ export default class CacheRoute extends Component {
                     {render({
                       ...props,
                       ...configProps,
-                      pathname,
                       cacheKey,
+                      href,
                       multiple: true,
-                      key: pathname,
+                      key: multipleCacheKey,
                       match: recomputedMatch
                     })}
                   </Fragment>
@@ -144,7 +144,7 @@ export default class CacheRoute extends Component {
             renderSingle({
               ...props,
               ...configProps,
-              pathname: currentPathname,
+              href: currentPathname,
               multiple: false
             })
           )
