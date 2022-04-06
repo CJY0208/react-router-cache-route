@@ -294,18 +294,21 @@ export default class CacheComponent extends Component {
     }
   }
 
+  setStateAsync(state) {
+    return new Promise((resolve) => {
+      this.setState(state, resolve)
+    });
+  }
   reset = () => {
     delete this.__revertScrollPos
-
-    this.setState({
+    return this.setStateAsync({
       cached: false
     })
   }
 
   refresh = () => {
     delete this.__revertScrollPos;
-
-    this.setState({
+    return this.setStateAsync({
       key: Math.random()
     });
   };
