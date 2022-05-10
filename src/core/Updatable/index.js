@@ -7,29 +7,29 @@ import { run, get } from '../../helpers'
 const isSusSupported = !!Suspense
 const Freeze = isSusSupported ? ReactFreeze : ({ children }) => children
 
-export default class Updatable extends Component {
+class DelayFreeze extends Component {
   static propsTypes = {
-    when: PropTypes.bool.isRequired
+    freeze: PropTypes.bool.isRequired
   }
   state = {
-    freeze: false
+    freeze: false,
   }
   constructor(props) {
     super(props)
     this.state = {
-      freeze: !props.when
+      freeze: props.freeze,
     }
   }
 
   freezeTimeout = null
-  shouldComponentUpdate = ({ when }) => {
-    const currentWhen = this.props.when
+  shouldComponentUpdate = ({ freeze }) => {
+    const currentFreeze = this.props.freeze
 
-    if (when !== currentWhen) {
+    if (freeze !== currentFreeze) {
       clearTimeout(this.freezeTimeout)
       this.freezeTimeout = setTimeout(() => {
         this.setState({
-          freeze: !when
+          freeze,
         })
       }, 1000)
     }
@@ -37,8 +37,23 @@ export default class Updatable extends Component {
     return true
   }
   render = () => (
-    <Freeze freeze={this.props.when ? false : this.state.freeze}>
+    <Freeze freeze={!this.props.freeze ? false : this.state.freeze}>
       {run(this.props, 'children')}
     </Freeze>
   )
 }
+
+class Updatable extends Component {
+  static propsTypes = {
+    when: PropTypes.bool.isRequired,
+  }
+
+  render = () => run(this.props, 'children')
+  shouldComponentUpdate = ({ when }) => when
+}
+
+export default (props) => (
+  <DelayFreeze when={props.when}>
+    <Updatable {...props} />
+  </DelayFreeze>
+)
