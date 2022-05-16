@@ -107,6 +107,7 @@ export default class CacheRoute extends Component {
             this.cache[multipleCacheKey] = {
               updateTime: Date.now(),
               href: multipleCacheKey,
+              pathname: currentPathname,
               render: renderSingle
             }
 
@@ -121,7 +122,7 @@ export default class CacheRoute extends Component {
 
           return multiple ? (
             <Fragment>
-              {Object.entries(this.cache).map(([multipleCacheKey, { render, href }]) => {
+              {Object.entries(this.cache).map(([multipleCacheKey, { render, href, pathname }]) => {
                 const recomputedMatch =
                   multipleCacheKey === currentPathname + currentSearch ? match || computedMatch : null
 
@@ -131,6 +132,7 @@ export default class CacheRoute extends Component {
                       ...props,
                       ...configProps,
                       cacheKey,
+                      pathname,
                       href,
                       multiple: true,
                       key: multipleCacheKey,
@@ -144,6 +146,7 @@ export default class CacheRoute extends Component {
             renderSingle({
               ...props,
               ...configProps,
+              pathname: currentPathname,
               href: currentPathname,
               multiple: false
             })
