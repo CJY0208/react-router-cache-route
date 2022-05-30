@@ -1,9 +1,10 @@
 // Fork from react-freeze
 // https://github.com/software-mansion/react-freeze/blob/main/src/index.tsx
-import React, { Component, Suspense, Fragment } from 'react'
-import { globalThis } from '../../helpers'
+import React, { Component, lazy, Suspense, Fragment } from 'react'
+import { globalThis, isUndefined, isFunction } from '../../helpers'
 
-const notSupportSuspense = !(/^18/.test(React.version) && !!globalThis.document)
+const isSupported = isFunction(lazy) && !isUndefined(Suspense)
+const notSupportSuspense = !isSupported
 
 class Suspender extends Component {
   promiseCache = {}
