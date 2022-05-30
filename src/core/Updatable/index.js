@@ -53,7 +53,7 @@ class Updatable extends Component {
 }
 
 export default (props) => (
-  <DelayFreeze when={props.when}>
+  <DelayFreeze freeze={!props.when}>
     <Updatable {...props} />
   </DelayFreeze>
 )
