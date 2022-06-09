@@ -22,7 +22,7 @@ Route with cache for `react-router` like `keep-alive` in Vue.
 
 ---
 
-## Problem
+## Problem Scenarios
 
 Using `Route`, component can not be cached while going forward or back which lead to **losing data and interaction**
 
