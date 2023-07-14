@@ -2,7 +2,7 @@
 
 [![size](https://img.shields.io/bundlephobia/minzip/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
 [![dm](https://img.shields.io/npm/dm/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
-![](https://visitor-badge.glitch.me/badge?page_id=cjy0208.react-router-cache-route)
+![](https://komarev.com/ghpvc/?username=cjy0208-react-router-cache-route&label=VIEWS)
 
 English | [中文说明](./README_CN.md)
 
