@@ -11,6 +11,7 @@ export interface CacheRouteProps extends RouteProps {
   unmount?: boolean
   saveScrollPosition?: boolean
   multiple?: boolean | number
+  autoFreeze?: boolean
 }
 
 export declare class CacheRoute extends React.Component<CacheRouteProps> {}
@@ -18,6 +19,7 @@ export default CacheRoute
 
 export interface CacheSwitchProps extends SwitchProps {
   which?: (element: React.ElementType) => boolean
+  autoFreeze?: boolean
 }
 
 export declare class CacheSwitch extends React.Component<CacheSwitchProps> {}

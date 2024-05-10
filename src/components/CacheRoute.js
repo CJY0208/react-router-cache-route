@@ -17,7 +17,8 @@ export default class CacheRoute extends Component {
     render: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
     computedMatchForCacheRoute: PropTypes.object,
-    multiple: PropTypes.oneOfType([PropTypes.bool, PropTypes.number])
+    multiple: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
+    autoFreeze: PropTypes.bool
   }
 
   static defaultProps = {
@@ -39,6 +40,7 @@ export default class CacheRoute extends Component {
       saveScrollPosition,
       computedMatchForCacheRoute,
       multiple,
+      autoFreeze,
       ...restProps
     } = this.props
 
@@ -87,7 +89,7 @@ export default class CacheRoute extends Component {
           const renderSingle = props => (
             <CacheComponent {...props}>
               {cacheLifecycles => (
-                <Updatable when={isMatch(props.match)}>
+                <Updatable when={isMatch(props.match)} autoFreeze={autoFreeze}>
                   {() => {
                     Object.assign(props, { cacheLifecycles })
 

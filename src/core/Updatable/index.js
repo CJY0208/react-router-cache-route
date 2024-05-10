@@ -52,8 +52,8 @@ class Updatable extends Component {
   shouldComponentUpdate = ({ when }) => when
 }
 
-export default (props) => (
-  <DelayFreeze freeze={!props.when}>
+export default ({ autoFreeze = true, ...props }) => (
+  <DelayFreeze freeze={autoFreeze && !props.when}>
     <Updatable {...props} />
   </DelayFreeze>
 )

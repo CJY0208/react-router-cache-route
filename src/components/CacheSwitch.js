@@ -33,13 +33,13 @@ class CacheSwitch extends Switch {
   }
 
   render() {
-    const { children, which } = this.props
+    const { children, which, autoFreeze } = this.props
     const { location, match: contextMatch } = this.getContext()
 
     let __matchedAlready = false
 
     return (
-      <Updatable when={isMatch(contextMatch)}>
+      <Updatable when={isMatch(contextMatch)} autoFreeze={autoFreeze}>
         {() => (
           <SwitchFragment>
             {React.Children.map(children, element => {
