@@ -38,7 +38,7 @@
 
 **隐藏替代删除** 可以解决遇到的问题
 
-https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L41-L63
+https://github.com/remix-run/react-router/blob/v5.3.4/packages/react-router/modules/Route.js#L46-L61
 
 ---
 
