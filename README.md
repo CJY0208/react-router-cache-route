@@ -36,7 +36,7 @@ After reading source code of `Route` we found that using `children` prop as a fu
 
 **Hiding instead of Removing** would fix this issue.
 
-https://github.com/ReactTraining/react-router/blob/master/packages/react-router/modules/Route.js#L41-L63
+https://github.com/remix-run/react-router/blob/v5.3.4/packages/react-router/modules/Route.js#L46-L61
 
 ---
 
