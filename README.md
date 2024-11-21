@@ -1,3 +1,5 @@
+# ⚠️⚠️⚠️ <span>React router v6+ is NOT supported</span> ⚠️⚠️⚠️
+
 # CacheRoute
 
 [![size](https://img.shields.io/bundlephobia/minzip/react-router-cache-route.svg)](https://github.com/CJY0208/react-router-cache-route)
@@ -14,7 +16,7 @@ Route with cache for `react-router` like `keep-alive` in Vue.
 
 **React v15+**
 
-**React-Router v4+**
+**React-Router v4/v5**
 
 ---
 
