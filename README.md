@@ -1,4 +1,4 @@
-# ⚠️⚠️⚠️ <span>React router v6+ is NOT supported</span> ⚠️⚠️⚠️
+# ⚠️⚠️⚠️ <span>React Router v6+ is NOT supported</span> ⚠️⚠️⚠️
 
 # CacheRoute
 
