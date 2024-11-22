@@ -33,7 +33,11 @@ class CacheSwitch extends Switch {
   }
 
   render() {
-    const { children, which, autoFreeze } = this.props
+    const {
+      children,
+      which = element => get(element, 'type.__name') === 'CacheRoute',
+      autoFreeze
+    } = this.props
     const { location, match: contextMatch } = this.getContext()
 
     let __matchedAlready = false
@@ -129,10 +133,6 @@ if (isUsingNewContext) {
     location: PropTypes.object,
     which: PropTypes.func
   }
-}
-
-CacheSwitch.defaultProps = {
-  which: element => get(element, 'type.__name') === 'CacheRoute'
 }
 
 export default CacheSwitch
