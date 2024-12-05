@@ -2,7 +2,7 @@
   "name": "react-router-cache-route",
   "version": "1.13.0",
   "description": "cache-route for react-router base on react v15+ and router v4+",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "rollup --config"
   },
