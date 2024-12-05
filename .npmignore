@@ -1,6 +1,6 @@
 docs
 node_modules
-src
+# src
 .babelrc
 .gitignore
 .npmignore
