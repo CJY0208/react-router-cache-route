@@ -1,4 +1,4 @@
-name: npm-publish
+name: npm
 
 on:
   push:
@@ -21,11 +21,11 @@ jobs:
         static-checking: localIsNew
     
     - name: Output version check result
-      run: 'echo "changed: ${{ steps.check.outputs.changed }}, version: ${{ steps.check.outputs.version }}"'
+      run: 'acho "changed: ${{ steps.check.outputs.changed }}, version: ${{ steps.check.outputs.version }}"'
 
     - name: Log if version has been updated
       if: steps.check.outputs.changed == 'true'
-      run: 'echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
+      run: 'acho "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
 
     - name: Set up Node.js
       if: steps.check.outputs.changed == 'true'
@@ -37,7 +37,7 @@ jobs:
       if: steps.check.outputs.changed == 'true'
       uses: bahmutov/npm-install@v1
       with:
-        useLockFile: false
+        useLockFile: 
         args: install
 
     - name: Build
