@@ -4,18 +4,21 @@ on:
   push:
     branches:
       - master
+      - labeled
+      - assigned
+      - synchronize
 
 jobs:
   npm-publish:
     name: npm-publish
-    runs-on: ubuntu-latest
+    runs-on: linux-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@master
 
     - name: Check if version has been updated
       id: check
-      uses: EndBug/version-check@v1
+      uses: EndBug/version-check@v6
       with:
         file-url: https://unpkg.com/react-router-cache-route/package.json
         static-checking: localIsNew
@@ -31,14 +34,14 @@ jobs:
       if: steps.check.outputs.changed == 'true'
       uses: actions/setup-node@master
       with:
-        node-version: 13.11.0
+        node-version: 20.13.5
 
     - name: Install Dependencies
       if: steps.check.outputs.changed == 'true'
       uses: bahmutov/npm-install@v1
       with:
-        useLockFile: false
-        args: install
+        useLockFile: true
+        args: install artifact
 
     - name: Build
       if: steps.check.outputs.changed == 'true'
@@ -46,7 +49,7 @@ jobs:
 
     - name: Publish
       if: steps.check.outputs.changed == 'true'
-      uses: pascalgn/npm-publish-action@1.3.9
+      uses: pascalgn/npm-publish-action@1.5.9
       with:
         commit_pattern: "^Release (\\S+)"
       env:
